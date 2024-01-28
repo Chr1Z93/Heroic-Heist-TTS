@@ -22,7 +22,10 @@
     "HandWhite.3f6d35",
     "TableSurface.8be14f",
     "Cards.c9a0ab",
-    "PlayArea.5ef1de"
+    "PlayArea.5ef1de",
+    "Treasure.6df58a",
+    "PlayerRed.07e36a",
+    "PlayerWhite.0a874d"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",
