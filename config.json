@@ -1,0 +1,32 @@
+{
+  "ComponentTags": {
+    "labels": []
+  },
+  "DecalPallet": [],
+  "GameMode": "None",
+  "Gravity": 0.5,
+  "Grid_path": "Grid.json",
+  "Hands": {
+    "DisableUnused": false,
+    "Enable": true,
+    "Hiding": 0
+  },
+  "Lighting_path": "Lighting.json",
+  "LuaScriptState": "",
+  "LuaScript_path": "LuaScript.ttslua",
+  "Note": "",
+  "ObjectStates_order": [
+    "HandRed.5c4bb8",
+    "HandWhite.3f6d35",
+    "TableSurface.8be14f"
+  ],
+  "PlayArea": 0.5,
+  "SaveName": "Heroic Heist",
+  "Sky": "Sky_Museum",
+  "TabStates_path": "TabStates.json",
+  "Table": "Table_None",
+  "Tags": [],
+  "Turns_path": "Turns.json",
+  "VersionNumber": "v13.2.2",
+  "XmlUI_path": "Root.xml"
+}
