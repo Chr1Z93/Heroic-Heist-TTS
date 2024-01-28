@@ -11,6 +11,17 @@
     "g": 0.71324,
     "r": 0.71324
   },
+  "CustomDeck": {
+    "1": {
+      "BackIsHidden": true,
+      "BackURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/Back.png?raw=true",
+      "FaceURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/decksheet.png?raw=true",
+      "NumHeight": 7,
+      "NumWidth": 10,
+      "Type": 0,
+      "UniqueBack": false
+    }
+  },
   "Description": "",
   "DragSelectable": true,
   "GMNotes": "",
@@ -18,9 +29,12 @@
   "Grid": true,
   "GridProjection": false,
   "Hands": true,
+  "HideWhenFaceDown": true,
   "IgnoreFoW": false,
   "LayoutGroupSortIndex": 0,
   "Locked": false,
+  "LuaScript": "",
+  "LuaScriptState": "",
   "MeasureMovement": false,
   "Name": "Card",
   "Nickname": "",
@@ -29,9 +43,9 @@
   "Sticky": true,
   "Tooltip": true,
   "Transform": {
-    "posX": -1.436,
-    "posY": 4.695,
-    "posZ": 5.479,
+    "posX": 0.09,
+    "posY": 3.135,
+    "posZ": -0.271,
     "rotX": 0,
     "rotY": 180,
     "rotZ": 180,

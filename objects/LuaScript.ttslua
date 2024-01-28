@@ -1,5 +1,6 @@
 NOT_INTERACTABLE = {
-  "8be14f"
+  "8be14f",
+  "5ef1de"
 }
 
 function onLoad()
@@ -7,4 +8,32 @@ function onLoad()
     local obj = getObjectFromGUID(guid)
     if obj ~= nil then obj.interactable = false end
   end
+  buildSnaps()
+end
+
+function buildSnaps()
+  local playArea = getObjectFromGUID("5ef1de")
+  local upperleft = { x = 3, z = -3 }
+  local lowerright = { x = -3, z = 3 }
+  local snaps = {}
+
+  -- creates 25 snap points, for uneven rows + columns it makes a rotation snap point
+  for i = 1, 5 do
+    for j = 1, 5 do
+      local snap = {}
+      snap.position = {}
+      snap.position.x = round(upperleft.x - (upperleft.x - lowerright.x) * (i - 1) / 4, 3)
+      snap.position.y = 0.1
+      snap.position.z = round(upperleft.z - (upperleft.z - lowerright.z) * (j - 1) / 4, 3)
+
+      -- enable rotation snaps for uneven rows / columns
+      if (i % 2 ~= 0) and (j % 2 ~= 0) then
+        snap.rotation = { 0, 0, 0 }
+        snap.rotation_snap = true
+      end
+
+      table.insert(snaps, snap)
+    end
+  end
+  playArea.setSnapPoints(snaps)
 end

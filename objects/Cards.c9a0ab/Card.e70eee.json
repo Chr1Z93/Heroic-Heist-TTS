@@ -21,6 +21,8 @@
   "IgnoreFoW": false,
   "LayoutGroupSortIndex": 0,
   "Locked": false,
+  "LuaScript": "",
+  "LuaScriptState": "",
   "MeasureMovement": false,
   "Name": "Card",
   "Nickname": "",
