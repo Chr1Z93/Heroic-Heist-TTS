@@ -1,3 +1,10 @@
-function onLoad()
+NOT_INTERACTABLE = {
+  "8be14f"
+}
 
+function onLoad()
+  for _, guid in ipairs(NOT_INTERACTABLE) do
+    local obj = getObjectFromGUID(guid)
+    if obj ~= nil then obj.interactable = false end
+  end
 end

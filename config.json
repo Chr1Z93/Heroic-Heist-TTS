@@ -3,7 +3,9 @@
     "labels": []
   },
   "DecalPallet": [],
-  "GameMode": "None",
+  "GameComplexity": "",
+  "GameMode": "Heroic Heist",
+  "GameType": "",
   "Gravity": 0.5,
   "Grid_path": "Grid.json",
   "Hands": {
@@ -12,13 +14,14 @@
     "Hiding": 0
   },
   "Lighting_path": "Lighting.json",
+  "LuaScript": "function onLoad()\n\nend",
   "LuaScriptState": "",
-  "LuaScript_path": "LuaScript.ttslua",
   "Note": "",
   "ObjectStates_order": [
     "HandRed.5c4bb8",
     "HandWhite.3f6d35",
-    "TableSurface.8be14f"
+    "TableSurface.8be14f",
+    "Cards.c9a0ab"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",
