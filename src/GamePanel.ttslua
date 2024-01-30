@@ -1,4 +1,20 @@
+HEALTH_TRACKER_WHITE_GUID = "29b826"
+HEALTH_TRACKER_RED_GUID   = "5a08bb"
+ROUND_TRACKER_GUID        = "bbd4df"
+TURN_TRACKER_GUID         = "6707f1"
+
+SOURCE_PLAYER_RED_GUID    = "81eaa5"
+SOURCE_PLAYER_WHITE_GUID  = "fc5ff4"
+SOURCE_RELIC_GUID         = "1e886d"
+SOURCE_ATTACK_DECK_GUID   = "893ba7"
+SOURCE_MOVEMENT_DECK_GUID = "f8b297"
+
+PLAYAREA_GUID             = "5ef1de"
+
 function onLoad()
+  getReferences()
+  math.randomseed(os.time())
+
   -- shared parameters
   local buttonParameters = {
     function_owner = self,
@@ -32,38 +48,85 @@ function onLoad()
   self.createButton(buttonParameters)
 end
 
+function getReferences()
+  HEALTH_TRACKER_WHITE = getObjectFromGUID(HEALTH_TRACKER_WHITE_GUID)
+  HEALTH_TRACKER_RED   = getObjectFromGUID(HEALTH_TRACKER_RED_GUID)
+  ROUND_TRACKER        = getObjectFromGUID(ROUND_TRACKER_GUID)
+  TURN_TRACKER         = getObjectFromGUID(TURN_TRACKER_GUID)
+  SOURCE_PLAYER_RED    = getObjectFromGUID(SOURCE_PLAYER_RED_GUID)
+  SOURCE_PLAYER_WHITE  = getObjectFromGUID(SOURCE_PLAYER_WHITE_GUID)
+  SOURCE_RELIC         = getObjectFromGUID(SOURCE_RELIC_GUID)
+  SOURCE_ATTACK_DECK   = getObjectFromGUID(SOURCE_ATTACK_DECK_GUID)
+  SOURCE_MOVEMENT_DECK = getObjectFromGUID(SOURCE_MOVEMENT_DECK_GUID)
+  PLAYAREA             = getObjectFromGUID(PLAYAREA_GUID)
+end
+
 function newGame()
   -- newRound
-
+  nextRound()
 
   -- set round to 1
-
-
+  ROUND_TRACKER.call("updateVal", 1)
 end
 
 function nextRound()
   -- reset board
+  for _, obj in ipairs(searchBoard()) do
+    obj.destruct()
+  end
 
-  
   -- reset turn tracker
-
+  TURN_TRACKER.call("updateVal", 1)
 
   -- add 1 to round tracker
-
+  ROUND_TRACKER.call("addOrSubtract", 1)
 
   -- reset health trackers
-
+  HEALTH_TRACKER_RED.call("updateVal", 100)
+  HEALTH_TRACKER_WHITE.call("updateVal", 100)
 
   -- spawn relic
+  local xPositions = { -11.87, -5.93, 0, 5.93, 11.87 }
+  local yRotations = { 0, 90, 180, 270 }
 
+  SOURCE_RELIC.takeObject({
+    position = { x = xPositions[math.random(5)], y = 2.9, z = 0 },
+    rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
+  })
 
   -- spawn player tokens
+  SOURCE_PLAYER_WHITE.takeObject({
+    position = { x = 0, y = 2.9, z = -11.85 },
+    rotation = { x = 0, y = 180, z = 0 }
+  })
 
-
+  SOURCE_PLAYER_RED.takeObject({
+    position = { x = 0, y = 2.9, z = 11.85 },
+    rotation = { x = 0, y = 0, z = 0 }
+  })
 end
 
 function nextTurn()
   -- add 1 to turn tracker
+  TURN_TRACKER.call("addOrSubtract", 1)
+end
 
+function searchBoard()
+  local searchResult = Physics.cast({
+    origin       = PLAYAREA.getPosition(),
+    direction    = { 0, 1, 0 },
+    orientation  = { 0, 0, 0 },
+    type         = 3,
+    size         = PLAYAREA.getBounds().size:setAt("y", 2),
+    max_distance = 0
+  })
 
+  -- filtering the result
+  local objList = {}
+  for _, v in ipairs(searchResult) do
+    if not v.hit_object.getLock() then
+      table.insert(objList, v.hit_object)
+    end
+  end
+  return objList
 end

@@ -1,5 +1,5 @@
 MIN_VALUE = 0
-MAX_VALUE = 99
+MAX_VALUE = 100
 val = 0
 
 function onSave() return JSON.encode(val) end
