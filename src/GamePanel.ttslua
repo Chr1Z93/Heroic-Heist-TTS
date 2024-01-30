@@ -62,14 +62,21 @@ function getReferences()
 end
 
 function newGame()
+  broadcastToAll("New Game!", "Green")
+
   -- newRound
-  nextRound()
+  nextRound(_, _, _, true)
 
   -- set round to 1
   ROUND_TRACKER.call("updateVal", 1)
 end
 
-function nextRound()
+function nextRound(_, _, _, noprint)
+  if not noprint then
+    local round = ROUND_TRACKER.getVar("val") + 1
+    broadcastToAll("Round " .. round, "Orange")
+  end
+
   -- reset board
   for _, obj in ipairs(searchBoard()) do
     obj.destruct()
@@ -107,6 +114,9 @@ function nextRound()
 end
 
 function nextTurn()
+  local turn = TURN_TRACKER.getVar("val") + 1
+  broadcastToAll("Turn " .. turn, "Yellow")
+
   -- add 1 to turn tracker
   TURN_TRACKER.call("addOrSubtract", 1)
 end
