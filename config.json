@@ -14,7 +14,7 @@
     "Hiding": 0
   },
   "Lighting_path": "Lighting.json",
-  "LuaScript": "function onLoad()\n\nend",
+  "LuaScript": "require(\"Global\")",
   "LuaScriptState": "",
   "Note": "",
   "ObjectStates_order": [
