@@ -21,11 +21,12 @@
     "HandRed.5c4bb8",
     "HandWhite.3f6d35",
     "TableSurface.8be14f",
-    "Cards.c9a0ab",
     "PlayArea.5ef1de",
-    "Treasure.6df58a",
-    "PlayerRed.07e36a",
-    "PlayerWhite.0a874d"
+    "AttackDeckSource.893ba7",
+    "MovementDeckSource.f8b297",
+    "RelicSource.1e886d",
+    "PlayerRedSource.81eaa5",
+    "PlayerWhiteSource.fc5ff4"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",

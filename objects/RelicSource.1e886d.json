@@ -1,0 +1,51 @@
+{
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "Autoraise": true,
+  "ColorDiffuse": {
+    "b": 1,
+    "g": 0.37256,
+    "r": 0.30589
+  },
+  "ContainedObjects_order": [
+    "Relic.6df58a"
+  ],
+  "ContainedObjects_path": "RelicSource.1e886d",
+  "Description": "",
+  "DragSelectable": true,
+  "GMNotes": "",
+  "GUID": "1e886d",
+  "Grid": true,
+  "GridProjection": false,
+  "Hands": false,
+  "HideWhenFaceDown": false,
+  "IgnoreFoW": false,
+  "LayoutGroupSortIndex": 0,
+  "Locked": false,
+  "LuaScript": "",
+  "LuaScriptState": "",
+  "MaterialIndex": -1,
+  "MeasureMovement": false,
+  "MeshIndex": -1,
+  "Name": "Infinite_Bag",
+  "Nickname": "Relic Source",
+  "Snap": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "Transform": {
+    "posX": 38.868,
+    "posY": 2.483,
+    "posZ": -0.205,
+    "rotX": 0,
+    "rotY": 1,
+    "rotZ": 0,
+    "scaleX": 1,
+    "scaleY": 1,
+    "scaleZ": 1
+  },
+  "Value": 0,
+  "XmlUI": ""
+}

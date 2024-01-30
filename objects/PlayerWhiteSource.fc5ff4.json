@@ -1,0 +1,51 @@
+{
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "Autoraise": true,
+  "ColorDiffuse": {
+    "b": 1,
+    "g": 0.37256,
+    "r": 0.30589
+  },
+  "ContainedObjects_order": [
+    "PlayerWhite.0a874d"
+  ],
+  "ContainedObjects_path": "PlayerWhiteSource.fc5ff4",
+  "Description": "",
+  "DragSelectable": true,
+  "GMNotes": "",
+  "GUID": "fc5ff4",
+  "Grid": true,
+  "GridProjection": false,
+  "Hands": false,
+  "HideWhenFaceDown": false,
+  "IgnoreFoW": false,
+  "LayoutGroupSortIndex": 0,
+  "Locked": false,
+  "LuaScript": "",
+  "LuaScriptState": "",
+  "MaterialIndex": -1,
+  "MeasureMovement": false,
+  "MeshIndex": -1,
+  "Name": "Infinite_Bag",
+  "Nickname": "PlayerWhite Source",
+  "Snap": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "Transform": {
+    "posX": 42.685,
+    "posY": 2.483,
+    "posZ": -0.205,
+    "rotX": 0,
+    "rotY": 1,
+    "rotZ": 0,
+    "scaleX": 1,
+    "scaleY": 1,
+    "scaleZ": 1
+  },
+  "Value": 0,
+  "XmlUI": ""
+}
