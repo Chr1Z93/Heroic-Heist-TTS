@@ -225,9 +225,9 @@
     "rotX": 0,
     "rotY": 180,
     "rotZ": 0,
-    "scaleX": 20,
+    "scaleX": 15,
     "scaleY": 1,
-    "scaleZ": 20
+    "scaleZ": 15
   },
   "Value": 0,
   "XmlUI": ""

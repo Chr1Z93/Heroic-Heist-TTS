@@ -26,7 +26,8 @@
     "MovementDeckSource.f8b297",
     "RelicSource.1e886d",
     "PlayerRedSource.81eaa5",
-    "PlayerWhiteSource.fc5ff4"
+    "PlayerWhiteSource.fc5ff4",
+    "GamePanel.2f5ddb"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",
