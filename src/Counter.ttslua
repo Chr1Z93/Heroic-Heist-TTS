@@ -1,0 +1,43 @@
+MIN_VALUE = 0
+MAX_VALUE = 99
+val = 0
+
+function onSave() return JSON.encode(val) end
+
+function onLoad(savedData)
+  if savedData ~= "" and savedData ~= nil then
+    val = JSON.decode(savedData)
+  end
+
+  -- dark mode for white health tracker
+  local fontColor = { 1, 1, 1}
+  local name = self.getName()
+  if name == "HealthTrackerWhite" then
+    fontColor = { 0, 0, 0}
+  end
+
+  self.createButton({
+    label = tostring(val),
+    click_function = "none",
+    function_owner = self,
+    position = { 0, 0.5, 0.05 },
+    height = 0,
+    width = 0,
+    font_size = 400,
+    font_color = fontColor
+  })
+end
+
+function updateVal(newVal)
+  if tonumber(newVal) then
+    val = math.min(math.max(newVal, MIN_VALUE), MAX_VALUE)
+    self.editButton({ index = 0, label = tostring(val) })
+  end
+end
+
+function addOrSubtract(_, _, isRightClick)
+  val = math.min(math.max(val + (isRightClick and -1 or 1), MIN_VALUE), MAX_VALUE)
+  self.editButton({ index = 0, label = tostring(val) })
+end
+
+function none() end
