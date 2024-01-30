@@ -27,7 +27,11 @@
     "RelicSource.1e886d",
     "PlayerRedSource.81eaa5",
     "PlayerWhiteSource.fc5ff4",
-    "GamePanel.2f5ddb"
+    "GamePanel.2f5ddb",
+    "HealthTrackerWhite.29b826",
+    "HealthTrackerRed.5a08bb",
+    "RoundTracker.bbd4df",
+    "TurnTracker.6707f1"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",
