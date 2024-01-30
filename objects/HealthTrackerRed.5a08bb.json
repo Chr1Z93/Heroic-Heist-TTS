@@ -22,7 +22,7 @@
   "LayoutGroupSortIndex": 0,
   "Locked": true,
   "LuaScript": "require(\"Counter\")",
-  "LuaScriptState": "",
+  "LuaScriptState": "100",
   "MeasureMovement": false,
   "Name": "BlockSquare",
   "Nickname": "HealthTrackerRed",
