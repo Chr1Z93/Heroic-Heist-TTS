@@ -1,0 +1,45 @@
+{
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "Autoraise": true,
+  "ColorDiffuse": {
+    "b": 0,
+    "g": 0,
+    "r": 0
+  },
+  "Description": "",
+  "DragSelectable": true,
+  "GMNotes": "",
+  "GUID": "aba675",
+  "Grid": true,
+  "GridProjection": false,
+  "Hands": false,
+  "HideWhenFaceDown": false,
+  "IgnoreFoW": false,
+  "LayoutGroupSortIndex": 0,
+  "Locked": true,
+  "LuaScript": "require(\"Counter\")",
+  "LuaScriptState": "0",
+  "MeasureMovement": false,
+  "Name": "BlockSquare",
+  "Nickname": "ScoreTrackerWhite",
+  "Snap": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "Transform": {
+    "posX": -18,
+    "posY": 2.6,
+    "posZ": -6,
+    "rotX": 0,
+    "rotY": 90,
+    "rotZ": 0,
+    "scaleX": 3,
+    "scaleY": 0.2,
+    "scaleZ": 3
+  },
+  "Value": 0,
+  "XmlUI": ""
+}

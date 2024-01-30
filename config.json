@@ -31,7 +31,9 @@
     "HealthTrackerRed.5a08bb",
     "RoundTracker.bbd4df",
     "TurnTracker.6707f1",
-    "GamePanel.2f5ddb"
+    "GamePanel.2f5ddb",
+    "ScoreTrackerWhite.aba675",
+    "ScoreTrackerRed.bf8e2e"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",
