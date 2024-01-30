@@ -10,10 +10,15 @@ function onLoad(savedData)
   end
 
   -- dark mode for white health tracker
-  local fontColor = { 1, 1, 1}
+  -- smaller fontSize for health trackers
+  local fontColor = { 1, 1, 1 }
+  local fontSize = 400
   local name = self.getName()
   if name == "HealthTrackerWhite" then
-    fontColor = { 0, 0, 0}
+    fontColor = { 0, 0, 0 }
+    fontSize = 250
+  elseif name == "HealthTrackerRed" then
+    fontSize = 250
   end
 
   self.createButton({
@@ -23,7 +28,7 @@ function onLoad(savedData)
     position = { 0, 0.5, 0.05 },
     height = 0,
     width = 0,
-    font_size = 400,
+    font_size = fontSize,
     font_color = fontColor
   })
 end
@@ -35,8 +40,8 @@ function updateVal(newVal)
   end
 end
 
-function addOrSubtract(_, _, isRightClick)
-  val = math.min(math.max(val + (isRightClick and -1 or 1), MIN_VALUE), MAX_VALUE)
+function addOrSubtract(amount)
+  val = math.min(math.max(val + amount, MIN_VALUE), MAX_VALUE)
   self.editButton({ index = 0, label = tostring(val) })
 end
 

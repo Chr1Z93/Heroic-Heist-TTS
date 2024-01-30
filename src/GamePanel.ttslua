@@ -1,0 +1,69 @@
+function onLoad()
+  -- shared parameters
+  local buttonParameters = {
+    function_owner = self,
+    position = { x = 0, y = 0.2, z = 0.5 },
+    height = 1350,
+    width = 6000,
+    scale = { 0.1, 0.1, 0.1 },
+    font_size = 1000,
+    font_color = { 0, 0, 0 }
+  }
+
+  -- new game button
+  buttonParameters.label = "New Game"
+  buttonParameters.click_function = "newGame"
+  buttonParameters.position.z = -0.6
+  buttonParameters.tooltip = "Click to start a new game"
+  self.createButton(buttonParameters)
+
+  -- next round button
+  buttonParameters.label = "Next Round"
+  buttonParameters.click_function = "nextRound"
+  buttonParameters.tooltip = "Click to proceed to the next round"
+  buttonParameters.position.z = 0
+  self.createButton(buttonParameters)
+
+  -- next turn button
+  buttonParameters.label = "Next Turn"
+  buttonParameters.click_function = "nextTurn"
+  buttonParameters.tooltip = "Click to proceed to the next turn"
+  buttonParameters.position.z = 0.6
+  self.createButton(buttonParameters)
+end
+
+function newGame()
+  -- newRound
+
+
+  -- set round to 1
+
+
+end
+
+function nextRound()
+  -- reset board
+
+  
+  -- reset turn tracker
+
+
+  -- add 1 to round tracker
+
+
+  -- reset health trackers
+
+
+  -- spawn relic
+
+
+  -- spawn player tokens
+
+
+end
+
+function nextTurn()
+  -- add 1 to turn tracker
+
+
+end
