@@ -4,6 +4,29 @@
     "y": 0,
     "z": 0
   },
+  "AttachedSnapPoints": [
+    {
+      "Position": {
+        "x": 1.243,
+        "y": 0.2,
+        "z": -0.11
+      }
+    },
+    {
+      "Position": {
+        "x": 0.096,
+        "y": 0.2,
+        "z": -0.11
+      }
+    },
+    {
+      "Position": {
+        "x": -1.197,
+        "y": 0.2,
+        "z": 0.343
+      }
+    }
+  ],
   "Autoraise": true,
   "ColorDiffuse": {
     "b": 0,
