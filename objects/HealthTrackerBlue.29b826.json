@@ -7,8 +7,8 @@
   "Autoraise": true,
   "ColorDiffuse": {
     "b": 1,
-    "g": 1,
-    "r": 1
+    "g": 0.5333,
+    "r": 0.1216
   },
   "Description": "",
   "DragSelectable": true,
