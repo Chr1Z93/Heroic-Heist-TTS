@@ -12,7 +12,7 @@
   },
   "CustomImage": {
     "CustomToken": {
-      "MergeDistancePixels": 15,
+      "MergeDistancePixels": 10,
       "Stackable": false,
       "StandUp": false,
       "Thickness": 0.2
