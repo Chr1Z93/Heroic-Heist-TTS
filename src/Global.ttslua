@@ -8,6 +8,6 @@ NOT_INTERACTABLE = {
 function onLoad()
   for _, guid in ipairs(NOT_INTERACTABLE) do
     local obj = getObjectFromGUID(guid)
-    --if obj ~= nil then obj.interactable = false end
+    if obj ~= nil then obj.interactable = false end
   end
 end

@@ -9,15 +9,11 @@ function onLoad(savedData)
     val = JSON.decode(savedData)
   end
 
-  -- dark mode for blue health tracker
   -- smaller fontSize for health trackers
   local fontColor = { 1, 1, 1 }
   local fontSize = 400
   local name = self.getName()
-  if name == "HealthTrackerBlue" then
-    fontColor = { 0, 0, 0 }
-    fontSize = 250
-  elseif name == "HealthTrackerRed" then
+  if name == "HealthTrackerBlue" or name == "HealthTrackerRed" then
     fontSize = 250
   end
 

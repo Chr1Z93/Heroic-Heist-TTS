@@ -1,0 +1,94 @@
+local searchLib = require("SearchLib")
+
+local selfColor
+
+function onLoad()
+  -- shared parameters
+  local buttonParameters = {
+    function_owner = self,
+    height = 1000,
+    width = 4000,
+    scale = { 0.1, 0.1, 0.1 },
+    font_size = 800,
+    font_color = { 0, 0, 0 }
+  }
+
+  -- draw to three button
+  buttonParameters.label = "Draw to 3"
+  buttonParameters.click_function = "drawToThree"
+  buttonParameters.position = { x = -1.243, y = 0.2, z = 1.2 }
+  buttonParameters.tooltip = "Click to draw until you have 3 cards"
+  self.createButton(buttonParameters)
+
+  -- get color
+  selfColor = self.getMemo()
+end
+
+function drawToThree(_, playerColor, _, retry)
+  if playerColor ~= selfColor then
+    broadcastToColor("You should not be using this button.", playerColor, "Orange")
+    return
+  end
+
+  -- count cards in hand
+  local handObjects = Player[selfColor].getHandObjects()
+  local handCount = #handObjects
+
+  if handCount > 2 then
+    broadcastToColor("You already have 3 or more cards in your hand.", playerColor, "Orange")
+    return
+  end
+
+  -- get draw deck
+  local drawDeck = getDrawDeck()
+
+  if not drawDeck then
+    local discardPile = getDiscardPile()
+
+    if retry or not discardPile then
+      broadcastToColor("Didn't find deck or discard pile.", playerColor, "Orange")
+      return
+    end
+
+    reshuffleDiscard()
+    Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
+    return
+  end
+
+  -- draw cards
+  local amountToDraw = 3 - handCount
+
+  if drawDeck.getQuantity() < amountToDraw then
+    local discardPile = getDiscardPile()
+
+    if retry or not discardPile then
+      broadcastToColor("Deck is too small and didn't find discard pile to reshuffle.", playerColor, "Orange")
+      return
+    end
+
+    reshuffleDiscard()
+    Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
+  else
+    drawDeck.deal(amountToDraw, selfColor)
+  end
+end
+
+function getDrawDeck()
+  local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
+  local searchResult = searchLib.atPosition(deckPos, "isCardOrDeck")
+  if #searchResult == 1 then return searchResult[1] end
+end
+
+function getDiscardPile()
+  local discardPos = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
+  local searchResult = searchLib.atPosition(discardPos, "isCardOrDeck")
+  if #searchResult == 1 then return searchResult[1] end
+end
+
+function reshuffleDiscard()
+  local discardPile = getDiscardPile()
+  local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
+  local rot = self.getRotation()
+  discardPile.setRotation(rot:setAt("z", 180))
+  discardPile.setPosition(deckPos)
+end

@@ -46,11 +46,11 @@
     "posY": 4.681,
     "posZ": -17.103,
     "rotX": 0,
-    "rotY": 180,
-    "rotZ": 1,
-    "scaleX": 1,
+    "rotY": 0,
+    "rotZ": 0,
+    "scaleX": 0.78,
     "scaleY": 1,
-    "scaleZ": 1
+    "scaleZ": 0.78
   },
   "Value": 0,
   "XmlUI": ""

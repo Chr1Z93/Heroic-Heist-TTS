@@ -18,7 +18,7 @@ function onLoad()
   -- shared parameters
   local buttonParameters = {
     function_owner = self,
-    position = { x = 0, y = 0.2, z = 0.5 },
+    position = { x = 0, y = 0.2, z = 0 },
     height = 1350,
     width = 6000,
     scale = { 0.1, 0.1, 0.1 },
