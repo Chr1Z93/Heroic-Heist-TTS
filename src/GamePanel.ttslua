@@ -1,11 +1,23 @@
+local searchLib           = require("SearchLib")
+
+PLAYERMAT_BLUE_GUID       = "1f4fe0"
+PLAYERMAT_RED_GUID        = "9c3ece"
+
+DECKMAT_BLUE_GUID         = "ea89a6"
+DECKMAT_RED_GUID          = "42d92c"
+
 HEALTH_TRACKER_BLUE_GUID  = "29b826"
 HEALTH_TRACKER_RED_GUID   = "5a08bb"
+
 ROUND_TRACKER_GUID        = "bbd4df"
 TURN_TRACKER_GUID         = "6707f1"
+
 SCORE_TRACKER_BLUE_GUID   = "aba675"
 SCORE_TRACKER_RED_GUID    = "bf8e2e"
+
 SOURCE_PLAYER_BLUE_GUID   = "fc5ff4"
 SOURCE_PLAYER_RED_GUID    = "81eaa5"
+
 SOURCE_RELIC_GUID         = "1e886d"
 SOURCE_ATTACK_DECK_GUID   = "893ba7"
 SOURCE_MOVEMENT_DECK_GUID = "f8b297"
@@ -49,14 +61,24 @@ function onLoad()
 end
 
 function getReferences()
+  PLAYERMAT_BLUE       = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
+  PLAYERMAT_RED        = getObjectFromGUID(PLAYERMAT_RED_GUID)
+
+  DECKMAT_BLUE         = getObjectFromGUID(DECKMAT_BLUE_GUID)
+  DECKMAT_RED          = getObjectFromGUID(DECKMAT_RED_GUID)
+
   HEALTH_TRACKER_BLUE  = getObjectFromGUID(HEALTH_TRACKER_BLUE_GUID)
   HEALTH_TRACKER_RED   = getObjectFromGUID(HEALTH_TRACKER_RED_GUID)
+
   ROUND_TRACKER        = getObjectFromGUID(ROUND_TRACKER_GUID)
   TURN_TRACKER         = getObjectFromGUID(TURN_TRACKER_GUID)
+
   SCORE_TRACKER_BLUE   = getObjectFromGUID(SCORE_TRACKER_BLUE_GUID)
   SCORE_TRACKER_RED    = getObjectFromGUID(SCORE_TRACKER_RED_GUID)
+
   SOURCE_PLAYER_BLUE   = getObjectFromGUID(SOURCE_PLAYER_BLUE_GUID)
   SOURCE_PLAYER_RED    = getObjectFromGUID(SOURCE_PLAYER_RED_GUID)
+
   SOURCE_RELIC         = getObjectFromGUID(SOURCE_RELIC_GUID)
   SOURCE_ATTACK_DECK   = getObjectFromGUID(SOURCE_ATTACK_DECK_GUID)
   SOURCE_MOVEMENT_DECK = getObjectFromGUID(SOURCE_MOVEMENT_DECK_GUID)
@@ -80,9 +102,35 @@ function nextRound(_, _, _, noprint)
   end
 
   -- reset board
-  for _, obj in ipairs(searchBoard()) do
+  for _, obj in ipairs(searchLib.onObject(PLAYAREA, "isUnlocked")) do
     obj.destruct()
   end
+
+  -- reset playerboards
+  for _, obj in ipairs(searchLib.onObject(PLAYERMAT_BLUE, "isUnlocked")) do
+    obj.destruct()
+  end
+
+  for _, obj in ipairs(searchLib.onObject(PLAYERMAT_RED, "isUnlocked")) do
+    obj.destruct()
+  end
+
+  -- reset player hands
+  for _, obj in ipairs(Player["Blue"].getHandObjects()) do
+    obj.destruct()
+  end
+
+  for _, obj in ipairs(Player["Red"].getHandObjects()) do
+    obj.destruct()
+  end
+
+  -- reset deckmats
+  DECKMAT_BLUE.call("reset")
+  DECKMAT_RED.call("reset")
+
+  -- get new speed value for deckmats
+  DECKMAT_BLUE.call("setNewSpeed", math.random(1, 100))
+  DECKMAT_RED.call("setNewSpeed", math.random(1, 100))
 
   -- reset turn tracker
   TURN_TRACKER.call("updateVal", 1)
@@ -121,24 +169,4 @@ function nextTurn()
 
   -- add 1 to turn tracker
   TURN_TRACKER.call("addOrSubtract", 1)
-end
-
-function searchBoard()
-  local searchResult = Physics.cast({
-    origin       = PLAYAREA.getPosition(),
-    direction    = { 0, 1, 0 },
-    orientation  = { 0, 0, 0 },
-    type         = 3,
-    size         = PLAYAREA.getBounds().size:setAt("y", 2),
-    max_distance = 0
-  })
-
-  -- filtering the result
-  local objList = {}
-  for _, v in ipairs(searchResult) do
-    if not v.hit_object.getLock() then
-      table.insert(objList, v.hit_object)
-    end
-  end
-  return objList
 end

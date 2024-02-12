@@ -1,0 +1,97 @@
+local searchLib = require("SearchLib")
+
+PLAYERMAT_BLUE_GUID       = "1f4fe0"
+PLAYERMAT_RED_GUID        = "9c3ece"
+
+local selfColor
+local speed = 0
+
+function onSave() return speed end
+
+function onLoad(savedData)
+  if savedData and savedData ~= "" then
+    speed = tonumber(savedData)
+  end
+
+  -- shared parameters
+  local buttonParameters = {
+    function_owner = self,
+    height = 0,
+    width = 0,
+    scale = { 0.2, 0.2, 0.2 },
+    font_size = 625,
+    font_color = { 0, 0, 0 }
+  }
+
+  -- speed button
+  buttonParameters.label = speed
+  buttonParameters.click_function = "none"
+  buttonParameters.position = { x = 1.418, y = 0.2, z = -0.7167 }
+  self.createButton(buttonParameters)
+
+  -- get color
+  selfColor = self.getMemo()
+
+  if selfColor == "Blue" then
+    PLAYERMAT = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
+  else
+    PLAYERMAT = getObjectFromGUID(PLAYERMAT_RED_GUID)
+  end
+
+  Wait.time(updateDisplay, 2, -1)
+end
+
+function setNewSpeed(newSpeed)
+  speed = newSpeed
+  self.editButton({ index = 0, label = speed })
+end
+
+function getSpeed()
+  return speed
+end
+
+function reset()
+  for _, obj in ipairs(searchLib.onObject(self, "isUnlocked")) do
+    obj.destruct()
+  end
+end
+
+function updateDisplay()
+  -- remove current cards
+  reset()
+
+  -- get snap point positions
+  local positions = {}
+  for _, snap in ipairs(self.getSnapPoints()) do
+    table.insert(positions, self.positionToWorld(snap.position))
+  end
+
+  -- get list of new cards
+  local cardDataList = {}
+
+  -- cards in hand
+  for _, card in ipairs(Player[selfColor].getHandObjects()) do
+    table.insert(cardDataList, card.getData())
+  end
+  
+  -- cards on playermat
+  for _, obj in ipairs(searchLib.onObject(PLAYERMAT, "isCardOrDeck")) do
+    if obj.type == "Card" then
+      table.insert(cardDataList, obj.getData())
+    else
+      for _, cardData in ipairs(obj.getData().ContainedObjects) do
+        table.insert(cardDataList, cardData)
+      end
+    end
+  end
+
+  -- sort list by id
+  table.sort(cardDataList, function(a, b) return a.GMNotes < b.GMNotes end)
+
+  -- spawn
+  for i, data in ipairs(cardDataList) do
+    local obj = spawnObjectData({data = data})
+    obj.setPosition(positions[i])
+    obj.setRotation(Vector(0, 270, 0))
+  end
+end

@@ -3,6 +3,7 @@ do
   local filterFunctions = {
     isCard = function(x) return x.type == "Card" end,
     isDeck = function(x) return x.type == "Deck" end,
+    isUnlocked = function(x) return x.getLock() == false end,
     isCardOrDeck = function(x) return x.type == "Card" or x.type == "Deck" end,
     isTileOrToken = function(x) return x.type == "Tile" end
   }

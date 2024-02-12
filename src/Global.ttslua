@@ -1,8 +1,10 @@
 NOT_INTERACTABLE = {
   "8be14f", -- TableSurface
   "5ef1de", -- PlayArea
-  "1f4fe0", -- Playmat Blue
-  "9c3ece", -- Playmat Red
+  --"1f4fe0", -- Playmat Blue
+  --"9c3ece", -- Playmat Red
+  --"ea89a6", -- Deckmat Blue
+  --"42d92c", -- Deckmat Red
 }
 
 function onLoad()
