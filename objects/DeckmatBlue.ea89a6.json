@@ -1,0 +1,155 @@
+{
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "AttachedSnapPoints": [
+    {
+      "Position": {
+        "x": 1.075,
+        "y": 0.2,
+        "z": -0.166
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": 1.075,
+        "y": 0.2,
+        "z": 0.544
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": 0.355,
+        "y": 0.2,
+        "z": 0.544
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": 0.355,
+        "y": 0.2,
+        "z": -0.166
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": -0.365,
+        "y": 0.2,
+        "z": -0.166
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": -0.365,
+        "y": 0.2,
+        "z": 0.544
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": -1.085,
+        "y": 0.2,
+        "z": 0.544
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    },
+    {
+      "Position": {
+        "x": -1.085,
+        "y": 0.2,
+        "z": -0.166
+      },
+      "Rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 180
+      }
+    }
+  ],
+  "Autoraise": true,
+  "ColorDiffuse": {
+    "b": 0,
+    "g": 0,
+    "r": 0
+  },
+  "CustomImage": {
+    "CustomTile": {
+      "Stackable": false,
+      "Stretch": true,
+      "Thickness": 0.2,
+      "Type": 0
+    },
+    "ImageScalar": 1,
+    "ImageSecondaryURL": "",
+    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/deckmat_blue.png?raw=true",
+    "WidthScale": 0
+  },
+  "Description": "",
+  "DragSelectable": true,
+  "GMNotes": "",
+  "GUID": "ea89a6",
+  "Grid": true,
+  "GridProjection": false,
+  "Hands": false,
+  "HideWhenFaceDown": false,
+  "IgnoreFoW": false,
+  "LayoutGroupSortIndex": 0,
+  "Locked": true,
+  "LuaScript": "",
+  "LuaScriptState": "",
+  "MeasureMovement": false,
+  "Name": "Custom_Tile",
+  "Nickname": "DeckmatBlue",
+  "Snap": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "Transform": {
+    "posX": 24,
+    "posY": 2.5,
+    "posZ": -18,
+    "rotX": 0,
+    "rotY": 270,
+    "rotZ": 0,
+    "scaleX": 5,
+    "scaleY": 1,
+    "scaleZ": 5
+  },
+  "Value": 0,
+  "XmlUI": ""
+}
