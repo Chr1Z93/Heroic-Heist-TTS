@@ -57,9 +57,6 @@ function reset()
 end
 
 function updateDisplay()
-  -- remove current cards
-  reset()
-
   -- get snap point positions
   local positions = {}
   for _, snap in ipairs(self.getSnapPoints()) do
@@ -91,8 +88,14 @@ function updateDisplay()
     end
   end
 
+  -- skip this update if not 8 cards found
+  if #cardDataList ~= 8 then return end
+
   -- sort list by id
   table.sort(cardDataList, function(a, b) return a.GMNotes < b.GMNotes end)
+
+  -- remove current cards
+  reset()
 
   -- spawn
   for i, data in ipairs(cardDataList) do
