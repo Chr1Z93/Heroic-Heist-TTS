@@ -51,7 +51,7 @@ function getSpeed()
 end
 
 function reset()
-  for _, obj in ipairs(searchLib.onObject(self, "isUnlocked")) do
+  for _, obj in ipairs(searchLib.onObject(self, "isCard")) do
     obj.destruct()
   end
 end
@@ -69,17 +69,23 @@ function updateDisplay()
   -- get list of new cards
   local cardDataList = {}
 
-  -- cards in hand
+  -- cards in hand (will be displayed face-up)
   for _, card in ipairs(Player[selfColor].getHandObjects()) do
-    table.insert(cardDataList, card.getData())
+    local data = card.getData()
+    data.Transform.rotZ = 0
+    table.insert(cardDataList, data)
   end
   
-  -- cards on playermat
+  -- cards on playermat (will be displayed opposite of current rotation)
   for _, obj in ipairs(searchLib.onObject(PLAYERMAT, "isCardOrDeck")) do
     if obj.type == "Card" then
-      table.insert(cardDataList, obj.getData())
+      local data = obj.getData()
+      data.Transform.rotZ = obj.getRotation().z + 180
+      table.insert(cardDataList, data)
     else
+      local deckRotation = obj.getRotation()
       for _, cardData in ipairs(obj.getData().ContainedObjects) do
+        cardData.Transform.rotZ = deckRotation.z + 180
         table.insert(cardDataList, cardData)
       end
     end
@@ -90,8 +96,9 @@ function updateDisplay()
 
   -- spawn
   for i, data in ipairs(cardDataList) do
+    data.Transform.rotY = 270
     local obj = spawnObjectData({data = data})
     obj.setPosition(positions[i])
-    obj.setRotation(Vector(0, 270, 0))
+    obj.setLock(true)
   end
 end
