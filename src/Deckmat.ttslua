@@ -3,7 +3,6 @@ local searchLib = require("SearchLib")
 PLAYERMAT_BLUE_GUID       = "1f4fe0"
 PLAYERMAT_RED_GUID        = "9c3ece"
 
-local selfColor
 local speed = 0
 
 function onSave() return speed end
@@ -29,10 +28,7 @@ function onLoad(savedData)
   buttonParameters.position = { x = 1.418, y = 0.2, z = -0.7167 }
   self.createButton(buttonParameters)
 
-  -- get color
-  selfColor = self.getMemo()
-
-  if selfColor == "Blue" then
+  if self.getMemo() == "Blue" then
     PLAYERMAT = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
   else
     PLAYERMAT = getObjectFromGUID(PLAYERMAT_RED_GUID)
@@ -67,7 +63,7 @@ function updateDisplay()
   local cardDataList = {}
 
   -- cards in hand (will be displayed face-up)
-  for _, card in ipairs(Player[selfColor].getHandObjects()) do
+  for _, card in ipairs(Player[self.getMemo()].getHandObjects()) do
     local data = card.getData()
     data.Transform.rotZ = 0
     table.insert(cardDataList, data)
@@ -97,9 +93,8 @@ function updateDisplay()
   -- remove current cards
   reset()
 
-  -- spawn
+  -- spawn the card list
   for i, data in ipairs(cardDataList) do
-    data.Transform.rotY = 270
     local obj = spawnObjectData({data = data})
     obj.setPosition(positions[i])
     obj.setLock(true)

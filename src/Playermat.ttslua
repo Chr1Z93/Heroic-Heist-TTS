@@ -1,7 +1,5 @@
 local searchLib = require("SearchLib")
 
-local selfColor
-
 function onLoad()
   -- shared parameters
   local buttonParameters = {
@@ -19,19 +17,16 @@ function onLoad()
   buttonParameters.position = { x = -1.243, y = 0.2, z = 1.2 }
   buttonParameters.tooltip = "Click to draw until you have 3 cards"
   self.createButton(buttonParameters)
-
-  -- get color
-  selfColor = self.getMemo()
 end
 
 function drawToThree(_, playerColor, _, retry)
-  if playerColor ~= selfColor then
+  if playerColor ~= self.getMemo() then
     broadcastToColor("You should not be using this button.", playerColor, "Orange")
     return
   end
 
   -- count cards in hand
-  local handObjects = Player[selfColor].getHandObjects()
+  local handObjects = Player[self.getMemo()].getHandObjects()
   local handCount = #handObjects
 
   if handCount > 2 then
@@ -69,7 +64,7 @@ function drawToThree(_, playerColor, _, retry)
     reshuffleDiscard()
     Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
   else
-    drawDeck.deal(amountToDraw, selfColor)
+    drawDeck.deal(amountToDraw, self.getMemo())
   end
 end
 
