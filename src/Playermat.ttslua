@@ -1,7 +1,16 @@
 require("CardMetadata")
 local searchLib = require("SearchLib")
 
+local resolveButtonParameters = {
+  function_owner = self,
+  height = 1000,
+  width = 1000,
+  scale = { 0.1, 0.1, 0.1 }
+}
+
 function onLoad()
+  playArea = getObjectFromGUID("5ef1de")
+
   -- shared parameters
   local buttonParameters = {
     function_owner = self,
@@ -70,27 +79,69 @@ function resolveCard(_, playerColor)
 
   broadcastToAll(self.getMemo() .. " is playing " .. card.getName() .. ".", "White")
 
+  -- remove current buttons
+  playArea.clearButtons()
+
   -- get data for card
   local md = METADATA[card.getGMNotes()]
 
   -- get player position
-  local ids = Global.call("convertPosToId", playerToken.getPosition())
+  local grid = Global.call("convertPosToGrid", playerToken.getPosition())
 
-  log(ids)
+  -- get target locations
+  local direction = { Blue = -1, Red = 1 }
+  local mult = direction[self.getMemo()]
+  local targetGridList = {}
 
-  local newPos = Global.call("convertIdToPos", ids)
+  -- loop areas
+  for _, data in ipairs(md.targetAreas or {}) do
+    -- increase by 5 to avoid negative numbers
+    local start1 = data.c1[1] + 5
+    local end1 = data.c2[1] + 5
+    local start2 = data.c1[2] + 5
+    local end2 = data.c2[2] + 5
+    local step1 = (start1 >= end1) and -1 or 1
+    local step2 = (start2 >= end2) and -1 or 1
+    --log(start1 .. "|" .. end1 .. "|" .. step1)
+    --log(start2 .. "|" .. end2 .. "|" .. step2)
+    for i = start1, end1, step1 do
+      for j = start2, end2, step2 do
+        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
+        --log(newTarget)
+        if validateTarget(newTarget) then
+          table.insert(targetGridList, newTarget)
+        end
+      end
+    end
+  end
 
-  log(newPos)
-  
-  -- display valid move locations
+  -- loop spots
+  for _, data in ipairs(md.targetSpots or {}) do
+    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if validateTarget(newTarget) then
+      table.insert(targetGridList, newTarget)
+    end
+  end
 
+  -- display a button for each location
+  for _, targetGrid in ipairs(targetGridList) do
+    local newPos = Global.call("convertGridToPos", targetGrid)
+    Player["Blue"].pingTable(newPos)
 
-  -- display locations to deal damage to
-
+    -- resolveButtonParameters.position = playArea.positionToLocal(newPos)
+    -- resolveButtonParameters.click_function = "drawToThree"
+    -- playArea.createButton(resolveButtonParameters)
+  end
 
   -- move card to discard pile
+end
 
-
+function validateTarget(targetGrid)
+  if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
+    return true
+  else
+    return false
+  end
 end
 
 -- draws cards until there are 3 in the hand

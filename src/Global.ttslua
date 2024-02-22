@@ -21,18 +21,18 @@ function onLoad()
   end
 end
 
--- IDs go from top right to bottom left (from 1/1 to 5/5)
+-- grid goes from top right to bottom left (from 1/1 to 5/5)
 -- x from roughly local -0.6 to +0.6
 -- z from roughly local -0.6 to +0.6
-function convertPosToId(pos)
+function convertPosToGrid(pos)
   local lPos = playArea.positionToLocal(pos)
   local col = math.floor(lPos.x / 0.3 + 0.5) + 3
   local row = math.floor(lPos.z / 0.3 + 0.5) + 3
   return { row = row, col = col }
 end
 
-function convertIdToPos(ids)
-  local pos = { x = (ids.col - 3) * 0.3, y = 0.2, z = (ids.row - 3) * 0.3 }
+function convertGridToPos(grid)
+  local pos = { x = (grid.col - 3) * 0.3, y = 0.2, z = (grid.row - 3) * 0.3 }
 
   -- find closest snap point position
   for _, snap in ipairs(playArea.getSnapPoints()) do
@@ -43,5 +43,5 @@ function convertIdToPos(ids)
     end
   end
 
-  return playArea.positionToWorld(pos):setAt("y", 0.2)
+  return playArea.positionToWorld(pos)
 end
