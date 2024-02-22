@@ -161,6 +161,19 @@ function nextRound(_, _, _, noprint)
     position = { x = 0.05, y = 2.9, z = 10.29 },
     rotation = { x = 0, y = 0, z = 0 }
   })
+
+  -- give players copies of cards to assemble their deck
+  for _, color in ipairs({ "BLUE", "RED" }) do
+    local direction = { BLUE = -1, RED = 1 }
+    local mat = _G["PLAYERMAT_" .. color]
+    local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
+    local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
+    local rot = mat.getRotation()
+    SOURCE_MOVEMENT_DECK.takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
+    SOURCE_ATTACK_DECK.takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
+  end
+  
+  broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
 end
 
 function nextTurn()

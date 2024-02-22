@@ -1,3 +1,4 @@
+require("CardMetadata")
 local searchLib = require("SearchLib")
 
 function onLoad()
@@ -17,8 +18,82 @@ function onLoad()
   buttonParameters.position = { x = -1.243, y = 0.2, z = 1.2 }
   buttonParameters.tooltip = "Click to draw until you have 3 cards"
   self.createButton(buttonParameters)
+
+  -- resolve card button
+  buttonParameters.label = "Play Card"
+  buttonParameters.click_function = "resolveCard"
+  buttonParameters.position = { x = 1.243, y = 0.2, z = 1.2 }
+  buttonParameters.tooltip = "Click to resolve the active card"
+  self.createButton(buttonParameters)
 end
 
+-- starts resolving the active card (user input needed)
+function resolveCard(_, playerColor)
+  if playerColor ~= self.getMemo() then
+    broadcastToColor("You should not be using this button.", playerColor, "Orange")
+    return
+  end
+
+  -- get active card
+  local searchPos = self.positionToWorld(Vector(-1.197, 0.2, 0.343))
+  local searchResult = searchLib.atPosition(searchPos, "isCard")
+
+  if #searchResult == 0 then
+    broadcastToColor("Couldn't find active card.", playerColor, "Orange")
+    return
+  elseif #searchResult > 1 or searchResult[1].type == "Deck" then
+    broadcastToColor("Detected multiple cards instead of one.", playerColor, "Orange")
+    return
+  end
+
+  local card = searchResult[1]
+
+  if card.is_face_down then
+    card.flip()
+  end
+
+  -- get current position of player token
+  local searchName = "Player" .. self.getMemo()
+  local playerToken
+
+  for _, obj in ipairs(getObjects()) do
+    if obj.getName() == searchName then
+      playerToken = obj
+      break
+    end
+  end
+
+  if not playerToken then
+    broadcastToColor("Couldn't find player token.", playerColor, "Orange")
+    return
+  end
+
+  broadcastToAll(self.getMemo() .. " is playing " .. card.getName() .. ".", "White")
+
+  -- get data for card
+  local md = METADATA[card.getGMNotes()]
+
+  -- get player position
+  local ids = Global.call("convertPosToId", playerToken.getPosition())
+
+  log(ids)
+
+  local newPos = Global.call("convertIdToPos", ids)
+
+  log(newPos)
+  
+  -- display valid move locations
+
+
+  -- display locations to deal damage to
+
+
+  -- move card to discard pile
+
+
+end
+
+-- draws cards until there are 3 in the hand
 function drawToThree(_, playerColor, _, retry)
   if playerColor ~= self.getMemo() then
     broadcastToColor("You should not be using this button.", playerColor, "Orange")

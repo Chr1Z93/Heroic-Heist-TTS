@@ -12,4 +12,36 @@ function onLoad()
     local obj = getObjectFromGUID(guid)
     if obj ~= nil then obj.interactable = false end
   end
+
+  playArea = getObjectFromGUID("5ef1de")
+
+  -- if there is a white player but not a blue player, force change the color
+  if Player["White"] and not Player["Blue"] then
+    Player["White"].changeColor("Blue")
+  end
+end
+
+-- IDs go from top right to bottom left (from 1/1 to 5/5)
+-- x from roughly local -0.6 to +0.6
+-- z from roughly local -0.6 to +0.6
+function convertPosToId(pos)
+  local lPos = playArea.positionToLocal(pos)
+  local col = math.floor(lPos.x / 0.3 + 0.5) + 3
+  local row = math.floor(lPos.z / 0.3 + 0.5) + 3
+  return { row = row, col = col }
+end
+
+function convertIdToPos(ids)
+  local pos = { x = (ids.col - 3) * 0.3, y = 0.2, z = (ids.row - 3) * 0.3 }
+
+  -- find closest snap point position
+  for _, snap in ipairs(playArea.getSnapPoints()) do
+    if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
+      pos.x = snap.position.x
+      pos.z = snap.position.z
+      break
+    end
+  end
+
+  return playArea.positionToWorld(pos):setAt("y", 0.2)
 end

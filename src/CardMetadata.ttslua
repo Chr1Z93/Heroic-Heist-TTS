@@ -1,5 +1,5 @@
 -- this contains the metadata for the cards
--- "move": first value is horizontal (x), second value vertical (y)
+-- "move": first value is horizontal (in the same row, x), second value vertical (in the same column, z)
 -- red: 75 dmg, red with bar: 50 dmg, pink: 25 dmg
 METADATA = {
   ["01"] = {
