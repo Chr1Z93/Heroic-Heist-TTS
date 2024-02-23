@@ -136,10 +136,11 @@ function nextRound(_, _, _, noprint)
   local relicGrid = { row = 3, col = math.random(5)}
   local yRotations = { 0, 90, 180, 270 }
 
-  SOURCE_RELIC.takeObject({
+  local relic = SOURCE_RELIC.takeObject({
     position = Global.call("convertGridToPos", relicGrid),
     rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
   })
+  relic.setLock(true)
 
   for _, color in ipairs({ "BLUE", "RED" }) do
     local mat = _G["PLAYERMAT_" .. color]

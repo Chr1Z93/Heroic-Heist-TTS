@@ -96,7 +96,6 @@ function resolveCard(_, playerColor)
   for _, data in ipairs(md.directionMove or {}) do
     for i = 1, 5, 1 do
       local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
-      log(newTarget)
       if validateTarget(newTarget) then
         table.insert(targetGridList, newTarget)
       else
@@ -105,15 +104,35 @@ function resolveCard(_, playerColor)
     end
   end
 
+  -- loop choice movement
+  for _, data in ipairs(md.choice1 or {}) do
+    local newGrid = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if not validateTarget(newGrid) then
+      break
+    else
+      for _, data2 in ipairs(md.choice2 or {}) do
+        local newTarget = { row = newGrid.row + data2[2] * mult, col = newGrid.col + data2[1] * mult }
+        if validateTarget(newTarget) then
+          table.insert(targetGridList, newTarget)
+        end
+      end
+    end
+  end
+  
   -- display a button for each location
   highlightBoard.call("hideAll", playerColor)
-  for _, targetGrid in ipairs(targetGridList) do
-    local hParams = {
-      playerColor = playerColor,
-      grid = targetGrid,
-      cardId = card.getGMNotes()
-    }
-    highlightBoard.call("showHighlight", hParams)
+
+  if #targetGridList == 0 then
+    broadcastToColor("No valid target locations detected.", playerColor, "Orange")
+  else
+    for _, targetGrid in ipairs(targetGridList) do
+      local hParams = {
+        playerColor = playerColor,
+        grid = targetGrid,
+        cardId = card.getGMNotes()
+      }
+      highlightBoard.call("showHighlight", hParams)
+    end
   end
 end
 
