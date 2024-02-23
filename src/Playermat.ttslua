@@ -69,7 +69,7 @@ function resolveCard(_, playerColor)
     for i = start1, end1, step1 do
       for j = start2, end2, step2 do
         local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
-        if validateTarget(newTarget) then
+        if validateTarget(newTarget, false) then
           table.insert(targetGridList, newTarget)
         end
       end
@@ -79,7 +79,7 @@ function resolveCard(_, playerColor)
   -- loop spots
   for _, data in ipairs(md.targetSpots or {}) do
     local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if validateTarget(newTarget) then
+    if validateTarget(newTarget, false) then
       table.insert(targetGridList, newTarget)
     end
   end
@@ -87,7 +87,7 @@ function resolveCard(_, playerColor)
   -- loop fixed movement
   for _, data in ipairs(md.fixedMove or {}) do
     local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if validateTarget(newTarget) then
+    if validateTarget(newTarget, true) then
       table.insert(targetGridList, newTarget)
     end
   end
@@ -96,7 +96,7 @@ function resolveCard(_, playerColor)
   for _, data in ipairs(md.directionMove or {}) do
     for i = 1, 5, 1 do
       local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
-      if validateTarget(newTarget) then
+      if validateTarget(newTarget, true) then
         table.insert(targetGridList, newTarget)
       else
         break
@@ -107,18 +107,18 @@ function resolveCard(_, playerColor)
   -- loop choice movement
   for _, data in ipairs(md.choice1 or {}) do
     local newGrid = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if not validateTarget(newGrid) then
+    if not validateTarget(newGrid, true) then
       break
     else
       for _, data2 in ipairs(md.choice2 or {}) do
         local newTarget = { row = newGrid.row + data2[2] * mult, col = newGrid.col + data2[1] * mult }
-        if validateTarget(newTarget) then
+        if validateTarget(newTarget, true) then
           table.insert(targetGridList, newTarget)
         end
       end
     end
   end
-  
+
   -- display a button for each location
   highlightBoard.call("hideAll", playerColor)
 
@@ -140,9 +140,24 @@ function discardActiveCard()
   deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos)
 end
 
-function validateTarget(targetGrid)
+function validateTarget(targetGrid, isMove)
   if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
-    return true
+    if not isMove then
+      return true
+    else
+      -- get enemy position and check if he blocks
+      local enemyColor = oppositeColor(self.getMemo())
+      local grid = Global.call("getPlayerTokenGridPos", enemyColor)
+      if not grid then
+        return false
+      end
+
+      if targetGrid.row == grid.row and targetGrid.col == grid.col then
+        return false
+      else
+        return true
+      end
+    end
   else
     return false
   end
@@ -236,4 +251,12 @@ function reshuffleDiscard()
   local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
   discardPile.setRotation(self.getRotation():setAt("z", 180))
   discardPile.setPosition(deckPos)
+end
+
+function oppositeColor(color)
+  if color == "Blue" then
+    return "Red"
+  else
+    return "Blue"
+  end
 end
