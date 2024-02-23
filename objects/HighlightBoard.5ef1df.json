@@ -33,7 +33,7 @@
   "IgnoreFoW": false,
   "LayoutGroupSortIndex": 0,
   "Locked": true,
-  "LuaScript": "",
+  "LuaScript": "require(\"HighlightBoard\")",
   "LuaScriptState": "",
   "MeasureMovement": false,
   "Name": "Custom_Tile",
@@ -44,14 +44,14 @@
   "Transform": {
     "posX": 0,
     "posY": 2.4,
-    "posZ": 0.61,
+    "posZ": -0.65,
     "rotX": 0,
     "rotY": 0,
     "rotZ": 0,
-    "scaleX": 11.8,
+    "scaleX": 11.85,
     "scaleY": 1,
-    "scaleZ": 11.8
+    "scaleZ": 11.85
   },
   "Value": 0,
-  "XmlUI": ""
+  "XmlUI": "\u003cInclude src=\"HighlightBoard.xml\"/\u003e"
 }

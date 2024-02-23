@@ -22,7 +22,7 @@ function onLoad()
   end
 end
 
--- grid goes from top right to bottom left (from 1/1 to 5/5)
+-- grid goes from bottom left to top right (from 1/1 to 5/5)
 -- x from roughly local -0.6 to +0.6
 -- z from roughly local -0.6 to +0.6
 function convertPosToGrid(pos)
@@ -35,7 +35,7 @@ end
 function convertGridToPos(grid)
   local pos = { x = (grid.col - 3) * -0.3, y = 0.2, z = (grid.row - 3) * 0.3 }
 
-  -- find closest snap point position
+  -- find close snap point position
   for _, snap in ipairs(playArea.getSnapPoints()) do
     if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
       pos.x = snap.position.x
@@ -50,18 +50,22 @@ end
 -- get current position of player token
 function getPlayerTokenGridPos(color)
   local searchName = "Player" .. color
-  local playerToken
 
   for _, obj in ipairs(getObjects()) do
     if obj.getName() == searchName then
-      playerToken = obj
-      break
+      return convertPosToGrid(obj.getPosition())
     end
   end
 
-  if not playerToken then
-    broadcastToAll("Couldn't find " .. color .. " player token.", "Orange")
-  else
-    return convertPosToGrid(playerToken.getPosition())
+  broadcastToAll("Couldn't find " .. color .. " player token.", "Orange")
+end
+
+function getRelicTokenGridPos()
+  for _, obj in ipairs(getObjects()) do
+    if obj.getName() == "Relic" then
+      return convertPosToGrid(obj.getPosition())
+    end
   end
+
+  broadcastToAll("Couldn't find relic token.", "Orange")
 end

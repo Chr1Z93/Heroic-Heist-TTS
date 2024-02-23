@@ -1,0 +1,7 @@
+<Panel id="11"
+  color="Green"
+  height="25"
+  width="25"
+  position="-81 -81 -50">
+  <image image="https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true"/>
+</Panel>

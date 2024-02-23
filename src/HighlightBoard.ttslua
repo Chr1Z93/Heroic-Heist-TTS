@@ -1,0 +1,22 @@
+function onLoad()
+  createXML()
+end
+
+function createXML()
+  local xml = {}
+
+  --self.setXmlTable(xml)
+end
+
+function showHighlight(params)
+  -- position of highlight
+  local grid = params.grid
+
+  -- player to show this
+  local playerColor = params.playerColor
+
+  -- type of highlight ("move" = green, "damage" = red)
+  local type = params.type
+
+
+end

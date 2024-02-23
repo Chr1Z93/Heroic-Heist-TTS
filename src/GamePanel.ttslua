@@ -23,6 +23,9 @@ SOURCE_ATTACK_DECK_GUID   = "893ba7"
 SOURCE_MOVEMENT_DECK_GUID = "f8b297"
 PLAYAREA_GUID             = "5ef1de"
 
+GRID_START_BLUE = { row = 1, col = 3}
+GRID_START_RED = { row = 5, col = 3}
+
 function onLoad()
   getReferences()
   math.randomseed(os.time())
@@ -101,17 +104,8 @@ function nextRound(_, _, _, noprint)
     broadcastToAll("Round " .. round, "Orange")
   end
 
-  -- reset board
+  -- reset play area
   for _, obj in ipairs(searchLib.onObject(PLAYAREA, "isUnlocked")) do
-    obj.destruct()
-  end
-
-  -- reset playerboards
-  for _, obj in ipairs(searchLib.onObject(PLAYERMAT_BLUE, "isUnlocked")) do
-    obj.destruct()
-  end
-
-  for _, obj in ipairs(searchLib.onObject(PLAYERMAT_RED, "isUnlocked")) do
     obj.destruct()
   end
 
@@ -138,10 +132,6 @@ function nextRound(_, _, _, noprint)
   -- add 1 to round tracker
   ROUND_TRACKER.call("addOrSubtract", 1)
 
-  -- reset health trackers
-  HEALTH_TRACKER_RED.call("updateVal", 100)
-  HEALTH_TRACKER_BLUE.call("updateVal", 100)
-
   -- spawn relic
   local relicGrid = { row = 3, col = math.random(5)}
   local yRotations = { 0, 90, 180, 270 }
@@ -151,23 +141,25 @@ function nextRound(_, _, _, noprint)
     rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
   })
 
-  -- spawn player tokens
-  local blueGrid = { row = 1, col = 3}
-  local redGrid = { row = 5, col = 3}
-  SOURCE_PLAYER_BLUE.takeObject({
-    position = Global.call("convertGridToPos", blueGrid),
-    rotation = { x = 0, y = 180, z = 0 }
-  })
-
-  SOURCE_PLAYER_RED.takeObject({
-    position = Global.call("convertGridToPos", redGrid),
-    rotation = { x = 0, y = 0, z = 0 }
-  })
-
-  -- give players copies of cards to assemble their deck
   for _, color in ipairs({ "BLUE", "RED" }) do
-    local direction = { BLUE = -1, RED = 1 }
     local mat = _G["PLAYERMAT_" .. color]
+
+    -- reset playerboards
+    for _, obj in ipairs(searchLib.onObject(mat, "isUnlocked")) do
+      obj.destruct()
+    end
+
+    -- spawn player tokens
+    _G["SOURCE_PLAYER_" .. color].takeObject({
+      position = Global.call("convertGridToPos", _G["GRID_START_" .. color]),
+      rotation = mat.getRotation()
+    })
+
+    -- reset health trackers
+    _G["HEALTH_TRACKER_" .. color].call("updateVal", 100)
+
+    -- give players copies of cards to assemble their deck
+    local direction = { BLUE = -1, RED = 1 }
     local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
     local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
     local rot = mat.getRotation()
@@ -181,14 +173,11 @@ end
 function nextTurn()
   local turn = TURN_TRACKER.getVar("val") + 1
   broadcastToAll("Turn " .. turn, "Yellow")
-
-  -- add 1 to turn tracker
   TURN_TRACKER.call("addOrSubtract", 1)
 end
 
 function dealDamageToColor(params)
   local color = string.upper(params.color)
-
   _G["HEALTH_TRACKER_" .. color].call("addOrSubtract", -1 * params.damage)
   broadcastToAll(params.color .. " lost " .. params.damage .. " health.", "White")
 end
