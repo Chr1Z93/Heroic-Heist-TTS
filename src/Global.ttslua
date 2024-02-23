@@ -60,6 +60,18 @@ function getPlayerTokenGridPos(color)
   broadcastToAll("Couldn't find " .. color .. " player token.", "Orange")
 end
 
+function setPlayerTokenGridPos(params)
+  local searchName = "Player" .. params.color
+
+  for _, obj in ipairs(getObjects()) do
+    if obj.getName() == searchName then
+      obj.setPosition(convertGridToPos(params.grid))
+    end
+  end
+
+  broadcastToAll("Couldn't find " .. params.color .. " player token.", "Orange")
+end
+
 function getRelicTokenGridPos()
   for _, obj in ipairs(getObjects()) do
     if obj.getName() == "Relic" then

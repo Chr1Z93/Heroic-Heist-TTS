@@ -1,3 +1,5 @@
+require("CardMetadata")
+
 local colorTable = {
   ["0"] = "Green",
   ["25"] = "Pink",
@@ -54,14 +56,17 @@ function showHighlight(params)
   local panelId = params.playerColor .. "Panel" .. params.grid.row .. params.grid.col
   local circleId = params.playerColor .. "Circle" .. params.grid.row .. params.grid.col
 
+  local md = METADATA[params.cardId]
+  local type = tostring(md.damage or 0)
+
   -- update color
-  self.UI.setAttribute(circleId, "color", colorTable[params.modeOrDamage])
+  self.UI.setAttribute(circleId, "color", colorTable[type])
 
   -- update visibility
   self.UI.setAttribute(panelId, "visibility", "Black|" .. params.playerColor)
 
   -- store the current type
-  self.UI.setAttribute(panelId, "modeOrDamage", params.modeOrDamage)
+  self.UI.setAttribute(panelId, "cardId", params.cardId)
 end
 
 -- hides all highlights for the specified playercolor
@@ -77,24 +82,36 @@ function resolveCard(player, clickType, elementId)
   local len = string.len(elementId)
   local row = tonumber(string.sub(elementId, len - 1, len - 1))
   local col = tonumber(string.sub(elementId, len, len))
+
+  -- get cardId
   local panelId = player.color .. "Panel" .. row .. col
-  local modeOrDamage = tonumber(self.UI.getAttribute(panelId, "modeOrDamage"))
+  local cardId = self.UI.getAttribute(panelId, "cardId")
+
+  -- get metadata
+  local md = METADATA[cardId]
+  local type = md.damage or 0
 
   -- deal damage to enemy or move
-  if modeOrDamage > 0 then
+  if type > 0 then
     local enemyColor = oppositeColor(player.color)
     local grid = Global.call("getPlayerTokenGridPos", enemyColor)
     if not grid then return end
 
     if grid.row == row and grid.col == col then
       local GP = getObjectFromGUID("2f5ddb")
-      GP.call("dealDamageToColor", { color = enemyColor, damage = modeOrDamage })
+      GP.call("dealDamageToColor", { color = enemyColor, damage = type })
     else
       broadcastToAll("Missed target", "White")
     end
   else
-    --- resolve movement
+    local mParams = {
+      color = player.color,
+      grid = {row = row, col = col}
+    }
+    Global.call("setPlayerTokenGridPos", mParams)
   end
+
+  hideAll(player.color)
 end
 
 function oppositeColor(color)

@@ -54,7 +54,6 @@ function resolveCard(_, playerColor)
 
   -- get data for card
   local md = METADATA[card.getGMNotes()]
-  modeOrDamage = md.damage or 0
 
   -- get target locations
   local direction = { Blue = 1, Red = -1 }
@@ -88,18 +87,32 @@ function resolveCard(_, playerColor)
     end
   end
 
+  -- loop direction movement
+  for _, data in ipairs(md.directionMove or {}) do
+    for i = 1, 5, 1 do
+      local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
+      log(newTarget)
+      if validateTarget(newTarget) then
+        table.insert(targetGridList, newTarget)
+      else
+        break
+      end
+    end
+  end
+
   -- display a button for each location
   highlightBoard.call("hideAll", playerColor)
-  for i, targetGrid in ipairs(targetGridList) do
+  for _, targetGrid in ipairs(targetGridList) do
     local hParams = {
       playerColor = playerColor,
       grid = targetGrid,
-      modeOrDamage = tostring(modeOrDamage)
+      cardId = card.getGMNotes()
     }
     highlightBoard.call("showHighlight", hParams)
   end
 
-  deckLib.placeOrMergeIntoDeck(card, discardPos)
+  -- discard the active card
+  --deckLib.placeOrMergeIntoDeck(card, discardPos)
 end
 
 function validateTarget(targetGrid)
