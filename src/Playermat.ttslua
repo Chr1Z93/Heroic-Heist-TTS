@@ -49,9 +49,6 @@ function resolveCard(_, playerColor)
 
   broadcastToAll(playerColor .. " is playing " .. card.getName() .. ".", "White")
 
-  -- remove current buttons
-  highlightBoard.clearButtons()
-
   -- get data for card
   local md = METADATA[card.getGMNotes()]
 
@@ -87,6 +84,14 @@ function resolveCard(_, playerColor)
     end
   end
 
+  -- loop fixed movement
+  for _, data in ipairs(md.fixedMove or {}) do
+    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if validateTarget(newTarget) then
+      table.insert(targetGridList, newTarget)
+    end
+  end
+
   -- loop direction movement
   for _, data in ipairs(md.directionMove or {}) do
     for i = 1, 5, 1 do
@@ -110,9 +115,10 @@ function resolveCard(_, playerColor)
     }
     highlightBoard.call("showHighlight", hParams)
   end
+end
 
-  -- discard the active card
-  --deckLib.placeOrMergeIntoDeck(card, discardPos)
+function discardActiveCard()
+  deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos)
 end
 
 function validateTarget(targetGrid)

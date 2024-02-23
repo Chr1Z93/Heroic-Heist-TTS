@@ -13,13 +13,7 @@ function onLoad()
     local obj = getObjectFromGUID(guid)
     if obj ~= nil then obj.interactable = false end
   end
-
   playArea = getObjectFromGUID("5ef1de")
-
-  -- if there is a white player but not a blue player, force change the color
-  if Player["White"] and not Player["Blue"] then
-    Player["White"].changeColor("Blue")
-  end
 end
 
 -- grid goes from bottom left to top right (from 1/1 to 5/5)
@@ -32,27 +26,20 @@ function convertPosToGrid(pos)
   return { row = row, col = col }
 end
 
+-- find close snap point position
 function convertGridToPos(grid)
-  local pos = { x = (grid.col - 3) * -0.3, y = 0.2, z = (grid.row - 3) * 0.3 }
-
-  -- find close snap point position
+  local pos = { x = (grid.col - 3) * 0.3, z = (grid.row - 3) * 0.3 }
   for _, snap in ipairs(playArea.getSnapPoints()) do
     if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
-      pos.x = snap.position.x
-      pos.z = snap.position.z
-      break
+      return playArea.positionToWorld(Vector(snap.position.x, 0.2, snap.position.z))
     end
   end
-
-  return playArea.positionToWorld(pos)
 end
 
 -- get current position of player token
 function getPlayerTokenGridPos(color)
-  local searchName = "Player" .. color
-
   for _, obj in ipairs(getObjects()) do
-    if obj.getName() == searchName then
+    if obj.getName() == "Player" .. color then
       return convertPosToGrid(obj.getPosition())
     end
   end
@@ -61,11 +48,10 @@ function getPlayerTokenGridPos(color)
 end
 
 function setPlayerTokenGridPos(params)
-  local searchName = "Player" .. params.color
-
   for _, obj in ipairs(getObjects()) do
-    if obj.getName() == searchName then
+    if obj.getName() == "Player" .. params.color then
       obj.setPosition(convertGridToPos(params.grid))
+      return
     end
   end
 

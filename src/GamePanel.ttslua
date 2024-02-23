@@ -150,10 +150,11 @@ function nextRound(_, _, _, noprint)
     end
 
     -- spawn player tokens
-    _G["SOURCE_PLAYER_" .. color].takeObject({
+    local token = _G["SOURCE_PLAYER_" .. color].takeObject({
       position = Global.call("convertGridToPos", _G["GRID_START_" .. color]),
       rotation = mat.getRotation()
     })
+    token.setLock(true)
 
     -- reset health trackers
     _G["HEALTH_TRACKER_" .. color].call("updateVal", 100)

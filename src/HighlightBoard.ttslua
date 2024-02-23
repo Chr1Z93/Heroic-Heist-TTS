@@ -1,6 +1,9 @@
 require("CardMetadata")
 
-local colorTable = {
+PLAYERMAT_BLUE_GUID = "1f4fe0"
+PLAYERMAT_RED_GUID  = "9c3ece"
+
+local colorTable    = {
   ["0"] = "Green",
   ["25"] = "Pink",
   ["50"] = "Orange",
@@ -9,6 +12,9 @@ local colorTable = {
 
 function onLoad()
   createXML()
+
+  PLAYERMAT_BLUE = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
+  PLAYERMAT_RED  = getObjectFromGUID(PLAYERMAT_RED_GUID)
 end
 
 function createXML()
@@ -106,12 +112,15 @@ function resolveCard(player, clickType, elementId)
   else
     local mParams = {
       color = player.color,
-      grid = {row = row, col = col}
+      grid = { row = row, col = col }
     }
     Global.call("setPlayerTokenGridPos", mParams)
   end
 
   hideAll(player.color)
+
+  -- discard active card
+  _G["PLAYERMAT_" .. string.upper(player.color)].call("discardActiveCard")
 end
 
 function oppositeColor(color)
