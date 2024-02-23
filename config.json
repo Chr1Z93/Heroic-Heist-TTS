@@ -38,7 +38,9 @@
     "PlayermatRed.9c3ece",
     "PlayermatBlue.1f4fe0",
     "DeckmatBlue.ea89a6",
-    "DeckmatRed.42d92c"
+    "DeckmatRed.42d92c",
+    "HiddenZoneBlue.9ed505",
+    "HiddenZoneRed.06ee50"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",

@@ -132,7 +132,6 @@
   "LayoutGroupSortIndex": 0,
   "Locked": true,
   "LuaScript": "require(\"Deckmat\")",
-  "LuaScriptState": "",
   "MeasureMovement": false,
   "Memo": "Red",
   "Name": "Custom_Tile",

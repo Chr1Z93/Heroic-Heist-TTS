@@ -109,22 +109,12 @@ function nextRound(_, _, _, noprint)
     obj.destruct()
   end
 
-  -- reset player hands
-  for _, obj in ipairs(Player["Blue"].getHandObjects()) do
-    obj.destruct()
+  -- remove all cards and decks
+  for _, obj in ipairs(getObjects()) do
+    if obj.type == "Card" or obj.type == "Deck" then
+      obj.destruct()
+    end
   end
-
-  for _, obj in ipairs(Player["Red"].getHandObjects()) do
-    obj.destruct()
-  end
-
-  -- reset deckmats
-  DECKMAT_BLUE.call("reset")
-  DECKMAT_RED.call("reset")
-
-  -- get new speed value for deckmats
-  DECKMAT_BLUE.call("setNewSpeed", math.random(1, 100))
-  DECKMAT_RED.call("setNewSpeed", math.random(1, 100))
 
   -- reset turn tracker
   TURN_TRACKER.call("updateVal", 1)
@@ -136,11 +126,10 @@ function nextRound(_, _, _, noprint)
   local relicGrid = { row = 3, col = math.random(5)}
   local yRotations = { 0, 90, 180, 270 }
 
-  local relic = SOURCE_RELIC.takeObject({
+  SOURCE_RELIC.takeObject({
     position = Global.call("convertGridToPos", relicGrid),
     rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
   })
-  relic.setLock(true)
 
   for _, color in ipairs({ "BLUE", "RED" }) do
     local mat = _G["PLAYERMAT_" .. color]
@@ -151,14 +140,16 @@ function nextRound(_, _, _, noprint)
     end
 
     -- spawn player tokens
-    local token = _G["SOURCE_PLAYER_" .. color].takeObject({
+    _G["SOURCE_PLAYER_" .. color].takeObject({
       position = Global.call("convertGridToPos", _G["GRID_START_" .. color]),
       rotation = mat.getRotation()
     })
-    token.setLock(true)
 
     -- reset health trackers
     _G["HEALTH_TRACKER_" .. color].call("updateVal", 100)
+
+    -- get new speed value for deckmats
+    _G["DECKMAT_" .. color].call("setNewSpeed", math.random(1, 100))
 
     -- give players copies of cards to assemble their deck
     local direction = { BLUE = -1, RED = 1 }
