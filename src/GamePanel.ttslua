@@ -143,22 +143,24 @@ function nextRound(_, _, _, noprint)
   HEALTH_TRACKER_BLUE.call("updateVal", 100)
 
   -- spawn relic
-  local xPositions = { -9.53, -4.74, 0, 4.74, 9.53 }
+  local relicGrid = { row = 3, col = math.random(5)}
   local yRotations = { 0, 90, 180, 270 }
 
   SOURCE_RELIC.takeObject({
-    position = { x = xPositions[math.random(5)], y = 2.9, z = 0.7 },
+    position = Global.call("convertGridToPos", relicGrid),
     rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
   })
 
   -- spawn player tokens
+  local blueGrid = { row = 1, col = 3}
+  local redGrid = { row = 5, col = 3}
   SOURCE_PLAYER_BLUE.takeObject({
-    position = { x = 0.05, y = 2.9, z = -8.88 },
+    position = Global.call("convertGridToPos", blueGrid),
     rotation = { x = 0, y = 180, z = 0 }
   })
 
   SOURCE_PLAYER_RED.takeObject({
-    position = { x = 0.05, y = 2.9, z = 10.29 },
+    position = Global.call("convertGridToPos", redGrid),
     rotation = { x = 0, y = 0, z = 0 }
   })
 
@@ -172,7 +174,7 @@ function nextRound(_, _, _, noprint)
     SOURCE_MOVEMENT_DECK.takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
     SOURCE_ATTACK_DECK.takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
   end
-  
+
   broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
 end
 
@@ -182,4 +184,11 @@ function nextTurn()
 
   -- add 1 to turn tracker
   TURN_TRACKER.call("addOrSubtract", 1)
+end
+
+function dealDamageToColor(params)
+  local color = string.upper(params.color)
+
+  _G["HEALTH_TRACKER_" .. color].call("addOrSubtract", -1 * params.damage)
+  broadcastToAll(params.color .. " lost " .. params.damage .. " health.", "White")
 end

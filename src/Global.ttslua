@@ -1,6 +1,7 @@
 NOT_INTERACTABLE = {
   "8be14f", -- TableSurface
   "5ef1de", -- PlayArea
+  "5ef1df", -- HighlightBoard
   --"1f4fe0", -- Playmat Blue
   --"9c3ece", -- Playmat Red
   --"ea89a6", -- Deckmat Blue
@@ -32,7 +33,7 @@ function convertPosToGrid(pos)
 end
 
 function convertGridToPos(grid)
-  local pos = { x = (grid.col - 3) * 0.3, y = 0.2, z = (grid.row - 3) * 0.3 }
+  local pos = { x = (grid.col - 3) * -0.3, y = 0.2, z = (grid.row - 3) * 0.3 }
 
   -- find closest snap point position
   for _, snap in ipairs(playArea.getSnapPoints()) do
@@ -44,4 +45,23 @@ function convertGridToPos(grid)
   end
 
   return playArea.positionToWorld(pos)
+end
+
+-- get current position of player token
+function getPlayerTokenGridPos(color)
+  local searchName = "Player" .. color
+  local playerToken
+
+  for _, obj in ipairs(getObjects()) do
+    if obj.getName() == searchName then
+      playerToken = obj
+      break
+    end
+  end
+
+  if not playerToken then
+    broadcastToAll("Couldn't find " .. color .. " player token.", "Orange")
+  else
+    return convertPosToGrid(playerToken.getPosition())
+  end
 end
