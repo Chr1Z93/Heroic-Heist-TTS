@@ -53,5 +53,5 @@
     "scaleZ": 11.85
   },
   "Value": 0,
-  "XmlUI": "\u003cInclude src=\"HighlightBoard.xml\"/\u003e"
+  "XmlUI": ""
 }

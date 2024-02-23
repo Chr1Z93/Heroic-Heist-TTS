@@ -1,3 +1,10 @@
+local colorTable = {
+  ["0"] = "Green",
+  ["25"] = "Pink",
+  ["50"] = "Orange",
+  ["75"] = "Red"
+}
+
 function onLoad()
   createXML()
 end
@@ -5,18 +12,95 @@ end
 function createXML()
   local xml = {}
 
-  --self.setXmlTable(xml)
+  for _, color in ipairs({ "Blue", "Red" }) do
+    for row = 1, 5 do
+      for col = 1, 5 do
+        local xPos = -82 + (col - 1) * 41
+        local yPos = -82 + (row - 1) * 41
+        local zPos = -75
+        local elem = {
+          tag = "Panel",
+          attributes = {
+            id         = color .. "Panel" .. row .. col,
+            width      = 25,
+            height     = 25,
+            position   = xPos .. " " .. yPos .. " " .. zPos,
+            visibility = "Black"
+          },
+          children = {
+            tag = "Mask",
+            attributes = {
+              image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true"
+            },
+            children = {
+              tag = "Panel",
+              attributes = {
+                id = color .. "Circle" .. row .. col,
+                onClick = "resolveCard",
+                color = "White"
+              }
+            }
+          }
+        }
+        table.insert(xml, elem)
+      end
+    end
+  end
+
+  self.UI.setXmlTable(xml)
 end
 
 function showHighlight(params)
-  -- position of highlight
-  local grid = params.grid
+  local panelId = params.playerColor .. "Panel" .. params.grid.row .. params.grid.col
+  local circleId = params.playerColor .. "Circle" .. params.grid.row .. params.grid.col
 
-  -- player to show this
-  local playerColor = params.playerColor
+  -- update color
+  self.UI.setAttribute(circleId, "color", colorTable[params.modeOrDamage])
 
-  -- type of highlight ("move" = green, "damage" = red)
-  local type = params.type
+  -- update visibility
+  self.UI.setAttribute(panelId, "visibility", "Black|" .. params.playerColor)
 
+  -- store the current type
+  self.UI.setAttribute(panelId, "modeOrDamage", params.modeOrDamage)
+end
 
+-- hides all highlights for the specified playercolor
+function hideAll(playerColor)
+  for row = 1, 5 do
+    for col = 1, 5 do
+      self.UI.setAttribute(playerColor .. "Panel" .. row .. col, "visibility", "Black")
+    end
+  end
+end
+
+function resolveCard(player, clickType, elementId)
+  local len = string.len(elementId)
+  local row = tonumber(string.sub(elementId, len - 1, len - 1))
+  local col = tonumber(string.sub(elementId, len, len))
+  local panelId = player.color .. "Panel" .. row .. col
+  local modeOrDamage = tonumber(self.UI.getAttribute(panelId, "modeOrDamage"))
+
+  -- deal damage to enemy or move
+  if modeOrDamage > 0 then
+    local enemyColor = oppositeColor(player.color)
+    local grid = Global.call("getPlayerTokenGridPos", enemyColor)
+    if not grid then return end
+
+    if grid.row == row and grid.col == col then
+      local GP = getObjectFromGUID("2f5ddb")
+      GP.call("dealDamageToColor", { color = enemyColor, damage = modeOrDamage })
+    else
+      broadcastToAll("Missed target", "White")
+    end
+  else
+    --- resolve movement
+  end
+end
+
+function oppositeColor(color)
+  if color == "Blue" then
+    return "Red"
+  else
+    return "Blue"
+  end
 end

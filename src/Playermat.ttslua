@@ -2,13 +2,6 @@ require("CardMetadata")
 local searchLib = require("SearchLib")
 local deckLib = require("DeckLib")
 
-local resolveButtonParameters = {
-  function_owner = self,
-  height = 1100,
-  width = 1100,
-  scale = { 0.1, 0.1, 0.1 }
-}
-
 local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
 local discardPos = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
 
@@ -96,48 +89,17 @@ function resolveCard(_, playerColor)
   end
 
   -- display a button for each location
+  highlightBoard.call("hideAll", playerColor)
   for i, targetGrid in ipairs(targetGridList) do
-    local newPos = Global.call("convertGridToPos", targetGrid)
-    resolveButtonParameters.position = highlightBoard.positionToLocal(newPos):setAt("y", 0.5)
-
-    -- click function
-    local funcName = "resolveCardHelper" .. i
-    self.setVar(funcName, function(_, clickedbyColor) resolveCardHelper(targetGrid, clickedbyColor) end)
-
-    resolveButtonParameters.click_function = funcName
-    highlightBoard.createButton(resolveButtonParameters)
-  end
-end
-
-function resolveCardHelper(buttonGrid, playerColor)
-  if not allowButtonAccess(playerColor) then return end
-
-  -- deal damage to enemy or move
-  if modeOrDamage > 0 then
-    -- resolve damage
-    local enemyColor = oppositeColor(playerColor)
-
-    -- get current position of player token
-    local grid = Global.call("getPlayerTokenGridPos", enemyColor)
-    if not grid then return end
-
-    if grid.row == buttonGrid.row and grid.col == buttonGrid.col then
-      local GP = getObjectFromGUID("2f5ddb")
-      GP.call("dealDamageToColor", { color = enemyColor, damage = modeOrDamage })
-    else
-      broadcastToAll("Missed target", "White")
-    end
-  else
-    --- resolve movement
+    local hParams = {
+      playerColor = playerColor,
+      grid = targetGrid,
+      modeOrDamage = tostring(modeOrDamage)
+    }
+    highlightBoard.call("showHighlight", hParams)
   end
 
-  highlightBoard.clearButtons()
-
-  -- move card to discard pile
-  local card = getActiveCard()
-  if card then
-    deckLib.placeOrMergeIntoDeck(card, discardPos)
-  end
+  deckLib.placeOrMergeIntoDeck(card, discardPos)
 end
 
 function validateTarget(targetGrid)
@@ -219,7 +181,7 @@ end
 -- returns a reference to the active card
 function getActiveCard()
   local searchPos = self.positionToWorld(Vector(-1.197, 0.2, 0.343))
-  local searchResult = searchLib.atPosition(searchPos, "isCard")
+  local searchResult = searchLib.atPosition(searchPos, "isCardOrDeck")
   local color = self.getMemo() or ""
 
   if #searchResult == 0 then
@@ -236,12 +198,4 @@ function reshuffleDiscard()
   local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
   discardPile.setRotation(self.getRotation():setAt("z", 180))
   discardPile.setPosition(deckPos)
-end
-
-function oppositeColor(color)
-  if color == "Blue" then
-    return "Red"
-  else
-    return "Blue"
-  end
 end
