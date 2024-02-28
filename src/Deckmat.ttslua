@@ -1,9 +1,7 @@
-local searchLib = require("SearchLib")
+require("libraries/GuidReferences")
+local searchLib = require("libraries/SearchLib")
 
-PLAYERMAT_BLUE_GUID       = "1f4fe0"
-PLAYERMAT_RED_GUID        = "9c3ece"
-
-local speed = 0
+local speed     = 0
 
 function onSave() return speed end
 
@@ -28,11 +26,7 @@ function onLoad(savedData)
   buttonParameters.position = { x = 1.418, y = 0.2, z = -0.7167 }
   self.createButton(buttonParameters)
 
-  if self.getMemo() == "Blue" then
-    PLAYERMAT = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
-  else
-    PLAYERMAT = getObjectFromGUID(PLAYERMAT_RED_GUID)
-  end
+  PLAYERMAT = getObjectFromName("Playermat" .. self.getMemo())
 
   Wait.time(updateDisplay, 2, -1)
 end
@@ -68,7 +62,7 @@ function updateDisplay()
     data.Transform.rotZ = 0
     table.insert(cardDataList, data)
   end
-  
+
   -- cards on playermat (will be displayed opposite of current rotation)
   for _, obj in ipairs(searchLib.onObject(PLAYERMAT, "isCardOrDeck")) do
     if obj.type == "Card" then
@@ -95,7 +89,7 @@ function updateDisplay()
 
   -- spawn the card list
   for i, data in ipairs(cardDataList) do
-    local obj = spawnObjectData({data = data})
+    local obj = spawnObjectData({ data = data })
     obj.setPosition(positions[i])
     obj.setLock(true)
   end

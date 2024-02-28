@@ -1,6 +1,6 @@
 do
   local DeckLib = {}
-  local searchLib = require("SearchLib")
+  local searchLib = require("libraries/SearchLib")
 
   -- places a card/deck at a position or merges into an existing deck
   ---@param obj tts__Object Object to move
@@ -28,19 +28,20 @@ do
     if rot then
       obj.setRotationSmooth(rot, false, true)
     end
+    ---@diagnostic disable-next-line: param-type-mismatch
     obj.setPositionSmooth(newPos, false, true)
 
     -- continue if the card stops smooth moving
     Wait.condition(
-    function()
-      obj.use_hands = true
-      -- this avoids a TTS bug that merges unrelated cards that are not resting
-      if #searchResult == 1 and searchResult[1] ~= obj then
-        -- call this with avoiding errors (physics is sometimes too fast so the object doesn't exist for the put)
-        pcall(function() searchResult[1].putObject(obj) end)
-      end
-    end,
-    function() return not obj.isSmoothMoving() end, 3)
+      function()
+        obj.use_hands = true
+        -- this avoids a TTS bug that merges unrelated cards that are not resting
+        if #searchResult == 1 and searchResult[1] ~= obj then
+          -- call this with avoiding errors (physics is sometimes too fast so the object doesn't exist for the put)
+          pcall(function() searchResult[1].putObject(obj) end)
+        end
+      end,
+      function() return not obj.isSmoothMoving() end, 3)
   end
 
   return DeckLib

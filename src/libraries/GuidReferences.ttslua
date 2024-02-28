@@ -1,0 +1,24 @@
+GUID_LIST = {
+  DeckmatBlue           = "ea89a6",
+  DeckmatRed            = "42d92c",
+  GamePanel             = "2f5ddb",
+  HealthTrackerBlue     = "29b826",
+  HealthTrackerRed      = "5a08bb",
+  HighlightBoard        = "5ef1df",
+  PlayArea              = "5ef1de",
+  PlayermatBlue         = "1f4fe0",
+  PlayermatRed          = "9c3ece",
+  RoundTracker          = "bbd4df",
+  ScoreTrackerBlue      = "aba675",
+  ScoreTrackerRed       = "bf8e2e",
+  SourcePlayerTokenBlue = "fc5ff4",
+  SourcePlayerTokenRed  = "81eaa5",
+  SourceRelic           = "1e886d",
+  SourceAttackDeck      = "893ba7",
+  SourceMovementDeck    = "f8b297",
+  TurnTracker           = "6707f1",
+}
+
+function getObjectFromName(name)
+  return getObjectFromGUID(GUID_LIST[name])
+end

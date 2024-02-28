@@ -1,18 +1,16 @@
+require("libraries/GuidReferences")
+
 NOT_INTERACTABLE = {
-  "5ef1de", -- PlayArea
-  "5ef1df", -- HighlightBoard
-  --"1f4fe0", -- Playmat Blue
-  --"9c3ece", -- Playmat Red
-  --"ea89a6", -- Deckmat Blue
-  --"42d92c", -- Deckmat Red
+  "PlayArea",
+  "HighlightBoard"
 }
 
 function onLoad()
-  for _, guid in ipairs(NOT_INTERACTABLE) do
-    local obj = getObjectFromGUID(guid)
-    if obj ~= nil then obj.interactable = false end
+  for _, name in ipairs(NOT_INTERACTABLE) do
+    local obj = getObjectFromName(name)
+    obj.interactable = false
   end
-  playArea = getObjectFromGUID("5ef1de")
+  playArea = getObjectFromName("PlayArea")
 end
 
 -- grid goes from bottom left to top right (from 1/1 to 5/5)

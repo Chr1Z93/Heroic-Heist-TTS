@@ -1,9 +1,7 @@
 require("CardMetadata")
+require("libraries/GuidReferences")
 
-PLAYERMAT_BLUE_GUID = "1f4fe0"
-PLAYERMAT_RED_GUID  = "9c3ece"
-
-local colorTable    = {
+local colorTable = {
   ["0"] = "Green",
   ["25"] = "Pink",
   ["50"] = "Orange",
@@ -13,8 +11,8 @@ local colorTable    = {
 function onLoad()
   createXML()
 
-  PLAYERMAT_BLUE = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
-  PLAYERMAT_RED  = getObjectFromGUID(PLAYERMAT_RED_GUID)
+  PLAYERMAT_BLUE = getObjectFromName("PlayermatBlue")
+  PLAYERMAT_RED  = getObjectFromName("PlayermatRed")
 end
 
 function createXML()
@@ -104,8 +102,8 @@ function resolveCard(player, clickType, elementId)
     if not grid then return end
 
     if grid.row == row and grid.col == col then
-      local GP = getObjectFromGUID("2f5ddb")
-      GP.call("dealDamageToColor", { color = enemyColor, damage = type })
+      local gamePanel = getObjectFromName("GamePanel")
+      gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
     else
       broadcastToAll("Missed target", "White")
     end

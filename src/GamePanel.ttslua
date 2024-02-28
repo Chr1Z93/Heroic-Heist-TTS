@@ -1,30 +1,8 @@
-local searchLib           = require("SearchLib")
+require("libraries/GuidReferences")
+local searchLib = require("libraries/SearchLib")
 
-PLAYERMAT_BLUE_GUID       = "1f4fe0"
-PLAYERMAT_RED_GUID        = "9c3ece"
-
-DECKMAT_BLUE_GUID         = "ea89a6"
-DECKMAT_RED_GUID          = "42d92c"
-
-HEALTH_TRACKER_BLUE_GUID  = "29b826"
-HEALTH_TRACKER_RED_GUID   = "5a08bb"
-
-ROUND_TRACKER_GUID        = "bbd4df"
-TURN_TRACKER_GUID         = "6707f1"
-
-SCORE_TRACKER_BLUE_GUID   = "aba675"
-SCORE_TRACKER_RED_GUID    = "bf8e2e"
-
-SOURCE_PLAYER_BLUE_GUID   = "fc5ff4"
-SOURCE_PLAYER_RED_GUID    = "81eaa5"
-
-SOURCE_RELIC_GUID         = "1e886d"
-SOURCE_ATTACK_DECK_GUID   = "893ba7"
-SOURCE_MOVEMENT_DECK_GUID = "f8b297"
-PLAYAREA_GUID             = "5ef1de"
-
-GRID_START_BLUE = { row = 1, col = 3}
-GRID_START_RED = { row = 5, col = 3}
+GRID_START_BLUE = { row = 1, col = 3 }
+GRID_START_RED  = { row = 5, col = 3 }
 
 function onLoad()
   getReferences()
@@ -64,28 +42,28 @@ function onLoad()
 end
 
 function getReferences()
-  PLAYERMAT_BLUE       = getObjectFromGUID(PLAYERMAT_BLUE_GUID)
-  PLAYERMAT_RED        = getObjectFromGUID(PLAYERMAT_RED_GUID)
+  PLAYERMAT_BLUE       = getObjectFromName("PlayermatBlue")
+  PLAYERMAT_RED        = getObjectFromName("PlayermatRed")
 
-  DECKMAT_BLUE         = getObjectFromGUID(DECKMAT_BLUE_GUID)
-  DECKMAT_RED          = getObjectFromGUID(DECKMAT_RED_GUID)
+  DECKMAT_BLUE         = getObjectFromName("DeckmatBlue")
+  DECKMAT_RED          = getObjectFromName("DeckmatRed")
 
-  HEALTH_TRACKER_BLUE  = getObjectFromGUID(HEALTH_TRACKER_BLUE_GUID)
-  HEALTH_TRACKER_RED   = getObjectFromGUID(HEALTH_TRACKER_RED_GUID)
+  HEALTH_TRACKER_BLUE  = getObjectFromName("HealthTrackerBlue")
+  HEALTH_TRACKER_RED   = getObjectFromName("HealthTrackerRed")
 
-  ROUND_TRACKER        = getObjectFromGUID(ROUND_TRACKER_GUID)
-  TURN_TRACKER         = getObjectFromGUID(TURN_TRACKER_GUID)
+  ROUND_TRACKER        = getObjectFromName("RoundTracker")
+  TURN_TRACKER         = getObjectFromName("TurnTracker")
 
-  SCORE_TRACKER_BLUE   = getObjectFromGUID(SCORE_TRACKER_BLUE_GUID)
-  SCORE_TRACKER_RED    = getObjectFromGUID(SCORE_TRACKER_RED_GUID)
+  SCORE_TRACKER_BLUE   = getObjectFromName("ScoreTrackerBlue")
+  SCORE_TRACKER_RED    = getObjectFromName("ScoreTrackerRed")
 
-  SOURCE_PLAYER_BLUE   = getObjectFromGUID(SOURCE_PLAYER_BLUE_GUID)
-  SOURCE_PLAYER_RED    = getObjectFromGUID(SOURCE_PLAYER_RED_GUID)
+  SOURCE_PLAYER_BLUE   = getObjectFromName("SourcePlayerTokenBlue")
+  SOURCE_PLAYER_RED    = getObjectFromName("SourcePlayerTokenRed")
 
-  SOURCE_RELIC         = getObjectFromGUID(SOURCE_RELIC_GUID)
-  SOURCE_ATTACK_DECK   = getObjectFromGUID(SOURCE_ATTACK_DECK_GUID)
-  SOURCE_MOVEMENT_DECK = getObjectFromGUID(SOURCE_MOVEMENT_DECK_GUID)
-  PLAYAREA             = getObjectFromGUID(PLAYAREA_GUID)
+  SOURCE_RELIC         = getObjectFromName("SourceRelic")
+  SOURCE_ATTACK_DECK   = getObjectFromName("SourceAttackDeck")
+  SOURCE_MOVEMENT_DECK = getObjectFromName("SourceMovementDeck")
+  PLAYAREA             = getObjectFromName("PlayArea")
 end
 
 function newGame()
@@ -123,7 +101,7 @@ function nextRound(_, _, _, noprint)
   ROUND_TRACKER.call("addOrSubtract", 1)
 
   -- spawn relic
-  local relicGrid = { row = 3, col = math.random(5)}
+  local relicGrid = { row = 3, col = math.random(5) }
   local yRotations = { 0, 90, 180, 270 }
 
   SOURCE_RELIC.takeObject({

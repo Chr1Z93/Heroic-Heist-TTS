@@ -1,13 +1,15 @@
 require("CardMetadata")
-local searchLib = require("SearchLib")
-local deckLib = require("DeckLib")
+require("libraries/GuidReferences")
+
+local searchLib = require("libraries/SearchLib")
+local deckLib = require("libraries/DeckLib")
 
 local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
 local discardPos = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
 
 function onLoad()
-  playArea = getObjectFromGUID("5ef1de")
-  highlightBoard = getObjectFromGUID("5ef1df")
+  playArea = getObjectFromName("PlayArea")
+  highlightBoard = getObjectFromName("HighlightBoard")
 
   local buttonParameters = {
     function_owner = self,
