@@ -10,6 +10,14 @@ function onLoad()
   playArea = getObjectFromName("PlayArea")
   highlightBoard = getObjectFromName("HighlightBoard")
 
+  enemyColor = oppositeColor(self.getMemo())
+
+  createButtons()
+end
+
+function createButtons()
+  self.clearButtons()
+
   local buttonParameters = {
     function_owner = self,
     height = 1000,
@@ -28,48 +36,50 @@ function onLoad()
 
   -- resolve card button
   buttonParameters.label = "Play Card"
-  buttonParameters.click_function = "resolveCard"
+  buttonParameters.click_function = "playCard"
   buttonParameters.position = { x = 1.243, y = 0.2, z = 1.2 }
   buttonParameters.tooltip = "Click to resolve the active card"
   self.createButton(buttonParameters)
 end
 
 -- starts resolving the active card (user input needed)
-function resolveCard(_, playerColor)
+function playCard(_, playerColor)
   if not allowButtonAccess(playerColor) then return end
 
+  -- check if card is ready to be played
   local card = getActiveCard()
-  if not card then
-    return
-  elseif card.is_face_down then
-    card.flip()
-  end
+  if not card then return end
+
+  local enemyMat = getObjectFromName("Playermat" .. enemyColor)
+  local enemyCard = enemyMat.call("getActiveCard")
+  if not enemyCard then return end
+
+  -- flip active card for both players
+  forceFaceUpActiveCard()
+  enemyMat.call("forceFaceUpActiveCard")
 
   local cardId = card.getGMNotes()
-  local targetGridList = Global.call("getTargetsForCardId", {
+  Global.call("displayTargetSelection", {
     playerColor = playerColor,
     cardId = cardId
   })
-  Global.call("displayTargetSelection", {
-      playerColor = playerColor,
-      cardId = cardId,
-      targetGridList = targetGridList
-    })
 end
 
 function discardActiveCard()
   deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos)
 end
 
+function forceFaceUpActiveCard()
+  local card = getActiveCard()
+  card.setRotation(card.getRotation():setAt("z", 0))
+end
+
 -- draws cards until there are 3 in the hand
 function drawToThree(_, playerColor, _, retry)
   if not allowButtonAccess(playerColor) then return end
 
-  -- count cards in hand
   local handObjects = Player[self.getMemo()].getHandObjects()
-  local handCount = #handObjects
-
-  if handCount > 2 then
+  if #handObjects > 2 then
     broadcastToColor("You already have 3 or more cards in your hand.", playerColor, "Orange")
     return
   end
@@ -90,7 +100,7 @@ function drawToThree(_, playerColor, _, retry)
   end
 
   -- draw cards
-  local amountToDraw = 3 - handCount
+  local amountToDraw = 3 - #handObjects
 
   if drawDeck.getQuantity() < amountToDraw then
     local discardPile = getDiscardPile()
@@ -131,23 +141,21 @@ end
 function getActiveCard()
   local searchPos = self.positionToWorld(Vector(-1.197, 0.2, 0.343))
   local searchResult = searchLib.atPosition(searchPos, "isCardOrDeck")
-  local color = self.getMemo() or ""
 
   if #searchResult == 0 then
-    broadcastToColor("Couldn't find active card.", color, "Orange")
+    broadcastToAll("Couldn't find active card for " .. self.getMemo() .. ".", "Orange")
   elseif #searchResult > 1 or searchResult[1].type == "Deck" then
-    broadcastToColor("Detected multiple cards instead of one.", color, "Orange")
+    broadcastToAll("Detected multiple cards instead of one for " .. self.getMemo() .. ".", "Orange")
   else
     return searchResult[1]
   end
 end
 
 function askToReshuffleDiscard(playerColor)
-  local enemyColor = oppositeColor(playerColor)
-
-  if Player[enemyColor] then
-    Player[enemyColor].showConfirmDialog("The enemy is about to reshuffle their discard pile. Please confirm to proceed.",
-      function ()
+  if Player[enemyColor].seated then
+    Player[enemyColor].showConfirmDialog(
+      "The enemy is about to reshuffle their discard pile. Please confirm to proceed.",
+      function()
         reshuffleDiscard(playerColor)
       end
     )
@@ -169,5 +177,16 @@ function oppositeColor(color)
     return "Red"
   else
     return "Blue"
+  end
+end
+
+-- shows / hides the "Play a card" button
+function togglePlayButton()
+  local buttonData = self.getButtons()
+
+  if #buttonData == 2 then
+    self.removeButton(1)
+  else
+    createButtons()
   end
 end

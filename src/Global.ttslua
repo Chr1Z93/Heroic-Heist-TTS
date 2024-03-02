@@ -18,6 +18,8 @@ function onLoad()
   gamePanel = getObjectFromName("GamePanel")
   highlightBoard = getObjectFromName("HighlightBoard")
   playArea = getObjectFromName("PlayArea")
+  playermatBlue = getObjectFromName("PlayermatBlue")
+  playermatRed = getObjectFromName("PlayermatRed")
 end
 
 -- grid goes from bottom left to top right (from 1/1 to 5/5)
@@ -70,6 +72,33 @@ function getRelicTokenGridPos()
   end
 
   broadcastToAll("Couldn't find relic token.", "Orange")
+end
+
+function maybeTakeControlOfRelic(newOwner)
+  for _, obj in ipairs(getObjects()) do
+    if obj.getName() == "Relic" then
+      local currentOwner
+      local currentGrid = convertPosToGrid(obj.getPosition())
+      if currentGrid.row == 0 then
+        currentOwner = "Blue"
+      elseif currentGrid.row == 6 then
+        currentOwner = "Red"
+      end
+
+      if currentOwner ~= newOwner then
+        local newPos = { 0, 2.8, -15.13 }
+        local newRot = { 0, 180, 0 }
+        if newOwner == "Red" then
+          newPos = { 0, 2.8, 14.45 }
+          newRot = { 0, 0, 0 }
+        end
+        obj.setPosition(newPos)
+        obj.setRotation(newRot)
+        broadcastToAll(newOwner .. " took control of the relic.", "White")
+      end
+      return
+    end
+  end
 end
 
 function getTargetsForCardId(params)
@@ -172,7 +201,7 @@ end
 function displayTargetSelection(params)
   local playerColor = params.playerColor
   local cardId = params.cardId
-  local targetGridList = params.targetGridList
+  local targetGridList = getTargetsForCardId(params)
 
   highlightBoard.call("hideAll", playerColor)
 
@@ -186,6 +215,16 @@ function displayTargetSelection(params)
         cardId = cardId
       }
       highlightBoard.call("showHighlight", hParams)
+
+      -- spawn temporary hidden zone to hide pointer
+      local data = getObjectFromName("HiddenZone" .. playerColor).getData()
+      data.Nickname = "HidePointerZone" .. playerColor
+      data.Tags = { "Temp" .. playerColor }
+      spawnObjectData({
+        data = data,
+        position = { 0, 3, 0 },
+        scale = { 25, 0.2, 25 }
+      })
     end
   end
 end
@@ -206,9 +245,24 @@ function registerChoice(params)
   choices[playerColor] = params
   highlightBoard.call("hideAll", playerColor)
 
-  -- if both players made a choice
+  removeTempZone(playerColor)
+
+  -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
     resolveBothCards()
+
+    -- show "Play a Card" button
+    local otherColor = oppositeColor(playerColor)
+    _G["playermat" .. otherColor].call("togglePlayButton")
+  else
+    -- hide "Play a Card" button
+    _G["playermat" .. playerColor].call("togglePlayButton")
+  end
+end
+
+function removeTempZone(playerColor)
+  for _, obj in ipairs(getObjectsWithTag("Temp" .. playerColor)) do
+    obj.destruct()
   end
 end
 
@@ -261,6 +315,7 @@ function resolveCard(params)
   if type > 0 then
     if eGrid.row == row and eGrid.col == col then
       gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
+      maybeTakeControlOfRelic(playerColor)
     else
       broadcastToAll("Missed target", "White")
     end
@@ -273,10 +328,15 @@ function resolveCard(params)
         grid = { row = row, col = col }
       }
       setPlayerTokenGridPos(mParams)
+
+      -- maybe take control of relic
+      local relicGridPos = getRelicTokenGridPos()
+      if relicGridPos.row == row and relicGridPos.col == col then
+        maybeTakeControlOfRelic(playerColor)
+      end
     end
   end
 
   -- discard active card
-  local mat = getObjectFromName("Playermat" .. playerColor)
-  mat.call("discardActiveCard")
+  _G["playermat" .. playerColor].call("discardActiveCard")
 end

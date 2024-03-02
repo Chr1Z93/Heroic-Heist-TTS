@@ -14,7 +14,7 @@
   "Description": "",
   "DragSelectable": true,
   "FogColor": "Blue",
-  "FogHidePointers": false,
+  "FogHidePointers": true,
   "FogReverseHiding": false,
   "FogSeethrough": true,
   "GMNotes": "",
