@@ -1,4 +1,3 @@
-require("CardMetadata")
 require("libraries/GuidReferences")
 
 local searchLib = require("libraries/SearchLib")
@@ -39,130 +38,27 @@ end
 function resolveCard(_, playerColor)
   if not allowButtonAccess(playerColor) then return end
 
-  -- get active card
   local card = getActiveCard()
-  if not card then return end
-
-  if card.is_face_down then card.flip() end
-
-  -- get current position of player token
-  local grid = Global.call("getPlayerTokenGridPos", playerColor)
-  if not grid then return end
-
-  broadcastToAll(playerColor .. " is playing " .. card.getName() .. ".", "White")
-
-  -- get data for card
-  local md = METADATA[card.getGMNotes()]
-
-  -- get target locations
-  local direction = { Blue = 1, Red = -1 }
-  local mult = direction[playerColor]
-  local targetGridList = {}
-
-  -- loop areas
-  for _, data in ipairs(md.targetAreas or {}) do
-    -- increase by 5 to avoid negative numbers
-    local start1 = data.c1[1] + 5
-    local end1 = data.c2[1] + 5
-    local start2 = data.c1[2] + 5
-    local end2 = data.c2[2] + 5
-    local step1 = (start1 >= end1) and -1 or 1
-    local step2 = (start2 >= end2) and -1 or 1
-    for i = start1, end1, step1 do
-      for j = start2, end2, step2 do
-        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
-        if validateTarget(newTarget, false) then
-          table.insert(targetGridList, newTarget)
-        end
-      end
-    end
+  if not card then
+    return
+  elseif card.is_face_down then
+    card.flip()
   end
 
-  -- loop spots
-  for _, data in ipairs(md.targetSpots or {}) do
-    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if validateTarget(newTarget, false) then
-      table.insert(targetGridList, newTarget)
-    end
-  end
-
-  -- loop fixed movement
-  for _, data in ipairs(md.fixedMove or {}) do
-    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if validateTarget(newTarget, true) then
-      table.insert(targetGridList, newTarget)
-    end
-  end
-
-  -- loop direction movement
-  for _, data in ipairs(md.directionMove or {}) do
-    for i = 1, 5, 1 do
-      local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
-      if validateTarget(newTarget, true) then
-        table.insert(targetGridList, newTarget)
-      else
-        break
-      end
-    end
-  end
-
-  -- loop choice movement
-  for _, data in ipairs(md.choice1 or {}) do
-    local newGrid = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
-    if not validateTarget(newGrid, true) then
-      break
-    else
-      for _, data2 in ipairs(md.choice2 or {}) do
-        local newTarget = { row = newGrid.row + data2[2] * mult, col = newGrid.col + data2[1] * mult }
-        if validateTarget(newTarget, true) then
-          table.insert(targetGridList, newTarget)
-        end
-      end
-    end
-  end
-
-  -- display a button for each location
-  highlightBoard.call("hideAll", playerColor)
-
-  if #targetGridList == 0 then
-    broadcastToColor("No valid target locations detected.", playerColor, "Orange")
-  else
-    for _, targetGrid in ipairs(targetGridList) do
-      local hParams = {
-        playerColor = playerColor,
-        grid = targetGrid,
-        cardId = card.getGMNotes()
-      }
-      highlightBoard.call("showHighlight", hParams)
-    end
-  end
+  local cardId = card.getGMNotes()
+  local targetGridList = Global.call("getTargetsForCardId", {
+    playerColor = playerColor,
+    cardId = cardId
+  })
+  Global.call("displayTargetSelection", {
+      playerColor = playerColor,
+      cardId = cardId,
+      targetGridList = targetGridList
+    })
 end
 
 function discardActiveCard()
   deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos)
-end
-
-function validateTarget(targetGrid, isMove)
-  if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
-    if not isMove then
-      return true
-    else
-      -- get enemy position and check if he blocks
-      local enemyColor = oppositeColor(self.getMemo())
-      local grid = Global.call("getPlayerTokenGridPos", enemyColor)
-      if not grid then
-        return false
-      end
-
-      if targetGrid.row == grid.row and targetGrid.col == grid.col then
-        return false
-      else
-        return true
-      end
-    end
-  else
-    return false
-  end
 end
 
 -- draws cards until there are 3 in the hand
@@ -189,8 +85,7 @@ function drawToThree(_, playerColor, _, retry)
       return
     end
 
-    reshuffleDiscard()
-    Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
+    askToReshuffleDiscard(playerColor)
     return
   end
 
@@ -205,8 +100,7 @@ function drawToThree(_, playerColor, _, retry)
       return
     end
 
-    reshuffleDiscard()
-    Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
+    askToReshuffleDiscard(playerColor)
   else
     drawDeck.deal(amountToDraw, self.getMemo())
   end
@@ -248,11 +142,26 @@ function getActiveCard()
   end
 end
 
-function reshuffleDiscard()
+function askToReshuffleDiscard(playerColor)
+  local enemyColor = oppositeColor(playerColor)
+
+  if Player[enemyColor] then
+    Player[enemyColor].showConfirmDialog("The enemy is about to reshuffle their discard pile. Please confirm to proceed.",
+      function ()
+        reshuffleDiscard(playerColor)
+      end
+    )
+  else
+    reshuffleDiscard(playerColor)
+  end
+end
+
+function reshuffleDiscard(playerColor)
   local discardPile = getDiscardPile()
   local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
   discardPile.setRotation(self.getRotation():setAt("z", 180))
   discardPile.setPosition(deckPos)
+  Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
 end
 
 function oppositeColor(color)

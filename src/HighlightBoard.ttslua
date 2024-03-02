@@ -10,14 +10,10 @@ local colorTable = {
 
 function onLoad()
   createXML()
-
-  PLAYERMAT_BLUE = getObjectFromName("PlayermatBlue")
-  PLAYERMAT_RED  = getObjectFromName("PlayermatRed")
 end
 
 function createXML()
   local xml = {}
-
   for _, color in ipairs({ "Blue", "Red" }) do
     for row = 1, 5 do
       for col = 1, 5 do
@@ -35,14 +31,12 @@ function createXML()
           },
           children = {
             tag = "Mask",
-            attributes = {
-              image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true"
-            },
+            attributes = { image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true" },
             children = {
               tag = "Panel",
               attributes = {
                 id = color .. "Circle" .. row .. col,
-                onClick = "resolveCard",
+                onClick = "makeChoice",
                 color = "White"
               }
             }
@@ -52,7 +46,6 @@ function createXML()
       end
     end
   end
-
   self.UI.setXmlTable(xml)
 end
 
@@ -82,7 +75,7 @@ function hideAll(playerColor)
   end
 end
 
-function resolveCard(player, clickType, elementId)
+function makeChoice(player, _, elementId)
   local len = string.len(elementId)
   local row = tonumber(string.sub(elementId, len - 1, len - 1))
   local col = tonumber(string.sub(elementId, len, len))
@@ -91,34 +84,7 @@ function resolveCard(player, clickType, elementId)
   local panelId = player.color .. "Panel" .. row .. col
   local cardId = self.UI.getAttribute(panelId, "cardId")
 
-  -- get metadata
-  local md = METADATA[cardId]
-  local type = md.damage or 0
-
-  -- deal damage to enemy or move
-  if type > 0 then
-    local enemyColor = oppositeColor(player.color)
-    local grid = Global.call("getPlayerTokenGridPos", enemyColor)
-    if not grid then return end
-
-    if grid.row == row and grid.col == col then
-      local gamePanel = getObjectFromName("GamePanel")
-      gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
-    else
-      broadcastToAll("Missed target", "White")
-    end
-  else
-    local mParams = {
-      color = player.color,
-      grid = { row = row, col = col }
-    }
-    Global.call("setPlayerTokenGridPos", mParams)
-  end
-
-  hideAll(player.color)
-
-  -- discard active card
-  _G["PLAYERMAT_" .. string.upper(player.color)].call("discardActiveCard")
+  Global.call("registerChoice", { choiceGrid = { row = row, col = col }, playerColor = player.color, cardId = cardId })
 end
 
 function oppositeColor(color)

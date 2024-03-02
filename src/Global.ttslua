@@ -1,3 +1,4 @@
+require("CardMetadata")
 require("libraries/GuidReferences")
 
 NOT_INTERACTABLE = {
@@ -5,11 +6,17 @@ NOT_INTERACTABLE = {
   "HighlightBoard"
 }
 
+choices = {}
+
 function onLoad()
   for _, name in ipairs(NOT_INTERACTABLE) do
     local obj = getObjectFromName(name)
     obj.interactable = false
   end
+  deckmatBlue = getObjectFromName("DeckmatBlue")
+  deckmatRed = getObjectFromName("DeckmatRed")
+  gamePanel = getObjectFromName("GamePanel")
+  highlightBoard = getObjectFromName("HighlightBoard")
   playArea = getObjectFromName("PlayArea")
 end
 
@@ -63,4 +70,213 @@ function getRelicTokenGridPos()
   end
 
   broadcastToAll("Couldn't find relic token.", "Orange")
+end
+
+function getTargetsForCardId(params)
+  local playerColor = params.playerColor
+  local cardId = params.cardId
+  local md = METADATA[cardId]
+
+  -- get current position of player token
+  local grid = getPlayerTokenGridPos(playerColor)
+
+  -- get target locations
+  local direction = { Blue = 1, Red = -1 }
+  local mult = direction[playerColor]
+  local targetGridList = {}
+
+  for _, data in ipairs(md.targetAreas or {}) do
+    -- increase by 5 to avoid negative numbers
+    local start1 = data.c1[1] + 5
+    local end1 = data.c2[1] + 5
+    local start2 = data.c1[2] + 5
+    local end2 = data.c2[2] + 5
+    local step1 = (start1 >= end1) and -1 or 1
+    local step2 = (start2 >= end2) and -1 or 1
+    for i = start1, end1, step1 do
+      for j = start2, end2, step2 do
+        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
+        if validateTarget(newTarget, false, playerColor) then
+          table.insert(targetGridList, newTarget)
+        end
+      end
+    end
+  end
+
+  for _, data in ipairs(md.targetSpots or {}) do
+    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if validateTarget(newTarget, false, playerColor) then
+      table.insert(targetGridList, newTarget)
+    end
+  end
+
+  for _, data in ipairs(md.fixedMove or {}) do
+    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if validateTarget(newTarget, true, playerColor) then
+      table.insert(targetGridList, newTarget)
+    end
+  end
+
+  for _, data in ipairs(md.directionMove or {}) do
+    for i = 1, 5, 1 do
+      local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
+      if validateTarget(newTarget, true, playerColor) then
+        table.insert(targetGridList, newTarget)
+      else
+        break
+      end
+    end
+  end
+
+  for _, data in ipairs(md.choice1 or {}) do
+    local newGrid = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if not validateTarget(newGrid, true, playerColor) then
+      break
+    else
+      for _, data2 in ipairs(md.choice2 or {}) do
+        local newTarget = { row = newGrid.row + data2[2] * mult, col = newGrid.col + data2[1] * mult }
+        if validateTarget(newTarget, true, playerColor) then
+          table.insert(targetGridList, newTarget)
+        end
+      end
+    end
+  end
+
+  return targetGridList
+end
+
+function validateTarget(targetGrid, isMove, playerColor)
+  if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
+    if not isMove then
+      return true
+    else
+      -- get enemy position and check if he blocks
+      local enemyColor = oppositeColor(playerColor)
+      local grid = getPlayerTokenGridPos(enemyColor)
+      if not grid then
+        return false
+      end
+
+      if targetGrid.row == grid.row and targetGrid.col == grid.col then
+        return false
+      else
+        return true
+      end
+    end
+  else
+    return false
+  end
+end
+
+-- display a button for each target location
+function displayTargetSelection(params)
+  local playerColor = params.playerColor
+  local cardId = params.cardId
+  local targetGridList = params.targetGridList
+
+  highlightBoard.call("hideAll", playerColor)
+
+  if #targetGridList == 0 then
+    broadcastToColor("No valid target locations detected.", playerColor, "Orange")
+  else
+    for _, targetGrid in ipairs(targetGridList) do
+      local hParams = {
+        playerColor = playerColor,
+        grid = targetGrid,
+        cardId = cardId
+      }
+      highlightBoard.call("showHighlight", hParams)
+    end
+  end
+end
+
+function oppositeColor(color)
+  if color == "Blue" then
+    return "Red"
+  else
+    return "Blue"
+  end
+end
+
+function registerChoice(params)
+  local playerColor = params.playerColor
+  printToAll(playerColor .. " made a choice.", "White")
+
+  -- store choice
+  choices[playerColor] = params
+  highlightBoard.call("hideAll", playerColor)
+
+  -- if both players made a choice
+  if choices.Blue ~= nil and choices.Red ~= nil then
+    resolveBothCards()
+  end
+end
+
+function resolveBothCards()
+  -- get speed of players
+  local speedBlue = deckmatBlue.call("getSpeed")
+  local speedRed = deckmatRed.call("getSpeed")
+
+  -- modify speed for movement before attack
+  if isAttack(choices.Blue.cardId) then
+    speedBlue = speedBlue + 100
+  end
+
+  if isAttack(choices.Red.cardId) then
+    speedRed = speedRed + 100
+  end
+
+  if speedBlue > speedRed then
+    resolveCard(choices.Red)
+    resolveCard(choices.Blue)
+  else
+    resolveCard(choices.Blue)
+    resolveCard(choices.Red)
+  end
+
+  -- reset "choices" table
+  choices = {}
+end
+
+function isAttack(cardId)
+  return (METADATA[cardId].damage or 0) > 0
+end
+
+function resolveCard(params)
+  local playerColor = params.playerColor
+  local cardId = params.cardId
+  local choiceGrid = params.choiceGrid
+  local row = choiceGrid.row
+  local col = choiceGrid.col
+
+  -- get metadata
+  local md = METADATA[cardId]
+  local type = md.damage or 0
+
+  -- deal damage to enemy or move
+  local enemyColor = oppositeColor(playerColor)
+  local eGrid = getPlayerTokenGridPos(enemyColor)
+  if not eGrid then return end
+
+  if type > 0 then
+    if eGrid.row == row and eGrid.col == col then
+      gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
+    else
+      broadcastToAll("Missed target", "White")
+    end
+  else
+    if eGrid.row == row and eGrid.col == col then
+      broadcastToAll(playerColor .. "'s movement was blocked.", "White")
+    else
+      local mParams = {
+        color = playerColor,
+        grid = { row = row, col = col }
+      }
+      setPlayerTokenGridPos(mParams)
+    end
+  end
+
+  -- discard active card
+  local mat = getObjectFromName("Playermat" .. playerColor)
+  mat.call("discardActiveCard")
 end
