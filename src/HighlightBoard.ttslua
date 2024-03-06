@@ -30,28 +30,33 @@ function createXML()
             visibility = "Black"
           },
           children = {
-            tag = "Mask",
-            attributes = { image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true" },
-            children = {
-              tag = "Panel",
-              attributes = {
-                id = color .. "Circle" .. row .. col,
-                onClick = "makeChoice",
-                visibility = "Black",
-                color = "White"
+            {
+              tag = "Mask",
+              attributes = { image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_circle.png?raw=true" },
+              children = {
+                tag = "Panel",
+                attributes = {
+                  id = color .. "Circle" .. row .. col,
+                  onClick = "makeChoice",
+                  visibility = "Black",
+                  color = "White"
+                }
               }
-            }
-          },
-          {
-            tag = "Mask",
-            attributes = { image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_arrow.png?raw=true" },
-            children = {
-              tag = "Panel",
+            },
+            {
+              tag = "Mask",
               attributes = {
-                id = color .. "Arrow" .. row .. col,
-                onClick = "makeChoice",
-                visibility = "Black",
-                color = "Green"
+                image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_arrow.png?raw=true",
+                id = color .. "ArrowMask" .. row .. col
+              },
+              children = {
+                tag = "Panel",
+                attributes = {
+                  id = color .. "Arrow" .. row .. col,
+                  onClick = "makeChoice",
+                  visibility = "Black",
+                  color = "Green"
+                }
               }
             }
           }
@@ -64,9 +69,10 @@ function createXML()
 end
 
 function showHighlight(params)
-  local panelId = params.playerColor .. "Panel" .. params.targetGrid.row .. params.grid.col
-  local circleId = params.playerColor .. "Circle" .. params.targetGrid.row .. params.grid.col
-  local arrowId = params.playerColor .. "Arrow" .. params.targetGrid.row .. params.grid.col
+  local panelId = params.playerColor .. "Panel" .. params.targetGrid.row .. params.targetGrid.col
+  local circleId = params.playerColor .. "Circle" .. params.targetGrid.row .. params.targetGrid.col
+  local arrowId = params.playerColor .. "Arrow" .. params.targetGrid.row .. params.targetGrid.col
+  local arrowMaskId = params.playerColor .. "ArrowMask" .. params.targetGrid.row .. params.targetGrid.col
 
   local md = METADATA[params.cardId]
   local type = tostring(md.damage or 0)
@@ -84,14 +90,23 @@ function showHighlight(params)
     if rowDiff < 0 and colDiff < 0 then
       arrowRot = 180
     elseif rowDiff < 0 and colDiff > 0 then
-      arrowRot = 90
-    elseif rowDiff > 0 and colDiff < 0 then
       arrowRot = 270
+    elseif rowDiff > 0 and colDiff < 0 then
+      arrowRot = 90
     elseif rowDiff > 0 and colDiff > 0 then
       arrowRot = 0
+    elseif rowDiff == 0 and colDiff < 0 then
+      arrowRot = 135
+    elseif rowDiff == 0 and colDiff > 0 then
+      arrowRot = 315
+    elseif rowDiff < 0 and colDiff == 0 then
+      arrowRot = 225
+    elseif rowDiff > 0 and colDiff == 0 then
+      arrowRot = 45
     end
 
-    self.UI.setAttribute(arrowId, "rotation", "0 " .. arrowRot)
+    log(params.playerColor .. ": " .. rowDiff .. " | " .. colDiff)
+    self.UI.setAttribute(arrowMaskId, "rotation", "0 0 " .. arrowRot)
 
     -- show arrow and hide circle
     self.UI.setAttribute(arrowId, "visibility", "Black|" .. params.playerColor)
