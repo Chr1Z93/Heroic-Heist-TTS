@@ -37,7 +37,21 @@ function createXML()
               attributes = {
                 id = color .. "Circle" .. row .. col,
                 onClick = "makeChoice",
+                visibility = "Black",
                 color = "White"
+              }
+            }
+          },
+          {
+            tag = "Mask",
+            attributes = { image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_arrow.png?raw=true" },
+            children = {
+              tag = "Panel",
+              attributes = {
+                id = color .. "Arrow" .. row .. col,
+                onClick = "makeChoice",
+                visibility = "Black",
+                color = "Green"
               }
             }
           }
@@ -50,16 +64,48 @@ function createXML()
 end
 
 function showHighlight(params)
-  local panelId = params.playerColor .. "Panel" .. params.grid.row .. params.grid.col
-  local circleId = params.playerColor .. "Circle" .. params.grid.row .. params.grid.col
+  local panelId = params.playerColor .. "Panel" .. params.targetGrid.row .. params.grid.col
+  local circleId = params.playerColor .. "Circle" .. params.targetGrid.row .. params.grid.col
+  local arrowId = params.playerColor .. "Arrow" .. params.targetGrid.row .. params.grid.col
 
   local md = METADATA[params.cardId]
   local type = tostring(md.damage or 0)
 
-  -- update color
-  self.UI.setAttribute(circleId, "color", colorTable[type])
+  local showArrow = (md.directionMove ~= nil)
 
-  -- update visibility
+  -- update child color and visibility
+  if showArrow then
+    -- update arrow rotation
+    local rowDiff = params.targetGrid.row - params.grid.row
+    local colDiff = params.targetGrid.col - params.grid.col
+
+    local arrowRot = 0
+
+    if rowDiff < 0 and colDiff < 0 then
+      arrowRot = 180
+    elseif rowDiff < 0 and colDiff > 0 then
+      arrowRot = 90
+    elseif rowDiff > 0 and colDiff < 0 then
+      arrowRot = 270
+    elseif rowDiff > 0 and colDiff > 0 then
+      arrowRot = 0
+    end
+
+    self.UI.setAttribute(arrowId, "rotation", "0 " .. arrowRot)
+
+    -- show arrow and hide circle
+    self.UI.setAttribute(arrowId, "visibility", "Black|" .. params.playerColor)
+    self.UI.setAttribute(circleId, "visibility", "Black")
+  else
+    -- update circle color
+    self.UI.setAttribute(circleId, "color", colorTable[type])
+
+    -- show circle and hide arrow
+    self.UI.setAttribute(circleId, "visibility", "Black|" .. params.playerColor)
+    self.UI.setAttribute(arrowId, "visibility", "Black")
+  end
+
+  -- update parent visibility
   self.UI.setAttribute(panelId, "visibility", "Black|" .. params.playerColor)
 
   -- store the current type
@@ -71,6 +117,8 @@ function hideAll(playerColor)
   for row = 1, 5 do
     for col = 1, 5 do
       self.UI.setAttribute(playerColor .. "Panel" .. row .. col, "visibility", "Black")
+      self.UI.setAttribute(playerColor .. "Circle" .. row .. col, "visibility", "Black")
+      self.UI.setAttribute(playerColor .. "Arrow" .. row .. col, "visibility", "Black")
     end
   end
 end

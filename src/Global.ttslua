@@ -146,14 +146,11 @@ function getTargetsForCardId(params)
     end
   end
 
+  -- only display close locations for directions
   for _, data in ipairs(md.directionMove or {}) do
-    for i = 1, 5, 1 do
-      local newTarget = { row = grid.row + i * data[2] * mult, col = grid.col + i * data[1] * mult }
-      if validateTarget(newTarget, true, playerColor) then
-        table.insert(targetGridList, newTarget)
-      else
-        break
-      end
+    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    if validateTarget(newTarget, true, playerColor) then
+      table.insert(targetGridList, newTarget)
     end
   end
 
@@ -211,8 +208,9 @@ function displayTargetSelection(params)
     for _, targetGrid in ipairs(targetGridList) do
       local hParams = {
         playerColor = playerColor,
-        grid = targetGrid,
-        cardId = cardId
+        targetGrid = targetGrid,
+        cardId = cardId,
+        grid = getPlayerTokenGridPos(playerColor)
       }
       highlightBoard.call("showHighlight", hParams)
 
@@ -303,6 +301,9 @@ function resolveCard(params)
   local row = choiceGrid.row
   local col = choiceGrid.col
 
+  -- get current position
+  local grid = getPlayerTokenGridPos(playerColor)
+
   -- get metadata
   local md = METADATA[cardId]
   local type = md.damage or 0
@@ -333,6 +334,18 @@ function resolveCard(params)
       local relicGridPos = getRelicTokenGridPos()
       if relicGridPos.row == row and relicGridPos.col == col then
         maybeTakeControlOfRelic(playerColor)
+      end
+
+      -- get next location for direction move
+      if md.directionMove then
+        -- get target location
+        local newTarget = { row = 2 * row - grid.row, col = 2 * col - grid.col }
+
+        -- if valid, repeat movement
+        if validateTarget(newTarget, true, playerColor) then
+          params.choiceGrid = newTarget
+          resolveCard(params)
+        end
       end
     end
   end
