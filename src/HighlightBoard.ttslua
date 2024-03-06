@@ -24,8 +24,8 @@ function createXML()
           tag = "Panel",
           attributes = {
             id         = color .. "Panel" .. row .. col,
-            width      = 30,
-            height     = 30,
+            width      = 35,
+            height     = 35,
             position   = xPos .. " " .. yPos .. " " .. zPos,
             visibility = "Black"
           },
@@ -58,6 +58,22 @@ function createXML()
                   color = "Green"
                 }
               }
+            },
+            {
+              tag = "Mask",
+              attributes = {
+                image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_connected.png?raw=true",
+                id = color .. "ConnectedMask" .. row .. col
+              },
+              children = {
+                tag = "Panel",
+                attributes = {
+                  id = color .. "Connected" .. row .. col,
+                  onClick = "makeChoice",
+                  visibility = "Black",
+                  color = "Red"
+                }
+              }
             }
           }
         }
@@ -73,6 +89,8 @@ function showHighlight(params)
   local circleId = params.playerColor .. "Circle" .. params.targetGrid.row .. params.targetGrid.col
   local arrowId = params.playerColor .. "Arrow" .. params.targetGrid.row .. params.targetGrid.col
   local arrowMaskId = params.playerColor .. "ArrowMask" .. params.targetGrid.row .. params.targetGrid.col
+  local connectedId = params.playerColor .. "Connected" .. params.targetGrid.row .. params.targetGrid.col
+  local connectedMaskId = params.playerColor .. "ConnectedMask" .. params.targetGrid.row .. params.targetGrid.col
 
   local md = METADATA[params.cardId]
   local type = tostring(md.damage or 0)
@@ -82,42 +100,21 @@ function showHighlight(params)
   -- update child color and visibility
   if showArrow then
     -- update arrow rotation
-    local rowDiff = params.targetGrid.row - params.grid.row
-    local colDiff = params.targetGrid.col - params.grid.col
-
-    local arrowRot = 0
-
-    if rowDiff < 0 and colDiff < 0 then
-      arrowRot = 180
-    elseif rowDiff < 0 and colDiff > 0 then
-      arrowRot = 270
-    elseif rowDiff > 0 and colDiff < 0 then
-      arrowRot = 90
-    elseif rowDiff > 0 and colDiff > 0 then
-      arrowRot = 0
-    elseif rowDiff == 0 and colDiff < 0 then
-      arrowRot = 135
-    elseif rowDiff == 0 and colDiff > 0 then
-      arrowRot = 315
-    elseif rowDiff < 0 and colDiff == 0 then
-      arrowRot = 225
-    elseif rowDiff > 0 and colDiff == 0 then
-      arrowRot = 45
-    end
-
-    log(params.playerColor .. ": " .. rowDiff .. " | " .. colDiff)
+    local arrowRot = getRotationBetweenGrids(params.targetGrid, params.grid)
     self.UI.setAttribute(arrowMaskId, "rotation", "0 0 " .. arrowRot)
 
-    -- show arrow and hide circle
+    -- show arrow, hide circle and connected
     self.UI.setAttribute(arrowId, "visibility", "Black|" .. params.playerColor)
     self.UI.setAttribute(circleId, "visibility", "Black")
+    self.UI.setAttribute(connectedId, "visibility", "Black")
   else
     -- update circle color
     self.UI.setAttribute(circleId, "color", colorTable[type])
 
-    -- show circle and hide arrow
+    -- show circle, hide arrow and connected
     self.UI.setAttribute(circleId, "visibility", "Black|" .. params.playerColor)
     self.UI.setAttribute(arrowId, "visibility", "Black")
+    self.UI.setAttribute(connectedId, "visibility", "Black")
   end
 
   -- update parent visibility
@@ -134,6 +131,7 @@ function hideAll(playerColor)
       self.UI.setAttribute(playerColor .. "Panel" .. row .. col, "visibility", "Black")
       self.UI.setAttribute(playerColor .. "Circle" .. row .. col, "visibility", "Black")
       self.UI.setAttribute(playerColor .. "Arrow" .. row .. col, "visibility", "Black")
+      self.UI.setAttribute(playerColor .. "Connected" .. row .. col, "visibility", "Black")
     end
   end
 end
@@ -148,6 +146,32 @@ function makeChoice(player, _, elementId)
   local cardId = self.UI.getAttribute(panelId, "cardId")
 
   Global.call("registerChoice", { choiceGrid = { row = row, col = col }, playerColor = player.color, cardId = cardId })
+end
+
+function getRotationBetweenGrids(gridA, gridB)
+  local rowDiff = gridA.row - gridB.row
+  local colDiff = gridA.col - gridB.col
+
+  local rot = 0
+  if rowDiff < 0 and colDiff < 0 then
+    rot = 180
+  elseif rowDiff < 0 and colDiff > 0 then
+    rot = 270
+  elseif rowDiff > 0 and colDiff < 0 then
+    rot = 90
+  elseif rowDiff > 0 and colDiff > 0 then
+    rot = 0
+  elseif rowDiff == 0 and colDiff < 0 then
+    rot = 135
+  elseif rowDiff == 0 and colDiff > 0 then
+    rot = 315
+  elseif rowDiff < 0 and colDiff == 0 then
+    rot = 225
+  elseif rowDiff > 0 and colDiff == 0 then
+    rot = 45
+  end
+
+  return rot
 end
 
 function oppositeColor(color)
