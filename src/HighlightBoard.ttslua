@@ -24,8 +24,8 @@ function createXML()
           tag = "Panel",
           attributes = {
             id         = color .. "Panel" .. row .. col,
-            width      = 35,
-            height     = 35,
+            width      = 33,
+            height     = 33,
             position   = xPos .. " " .. yPos .. " " .. zPos,
             visibility = "Black"
           },
@@ -137,6 +137,8 @@ function hideAll(playerColor)
 end
 
 function makeChoice(player, _, elementId)
+  if player.playerColor == "Black" then return end
+  
   local len = string.len(elementId)
   local row = tonumber(string.sub(elementId, len - 1, len - 1))
   local col = tonumber(string.sub(elementId, len, len))
