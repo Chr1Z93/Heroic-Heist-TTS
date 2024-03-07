@@ -96,10 +96,11 @@ function showHighlight(params)
   local type = tostring(md.damage or 0)
 
   local showArrow = (md.directionMove ~= nil)
+  local showConnected = (params.targetGrid.connected == true)
 
   -- update child color and visibility
   if showArrow then
-    -- update arrow rotation
+    -- update rotation
     local arrowRot = getRotationBetweenGrids(params.targetGrid, params.grid)
     self.UI.setAttribute(arrowMaskId, "rotation", "0 0 " .. arrowRot)
 
@@ -107,13 +108,22 @@ function showHighlight(params)
     self.UI.setAttribute(arrowId, "visibility", "Black|" .. params.playerColor)
     self.UI.setAttribute(circleId, "visibility", "Black")
     self.UI.setAttribute(connectedId, "visibility", "Black")
+  elseif showConnected then
+    -- update rotation
+    local connectedRot = params.targetGrid.rot or 0
+    self.UI.setAttribute(connectedMaskId, "rotation", "0 0 " .. connectedRot)
+
+    -- show connected, hide circle and arrow
+    self.UI.setAttribute(arrowId, "visibility", "Black")
+    self.UI.setAttribute(circleId, "visibility", "Black")
+    self.UI.setAttribute(connectedId, "visibility", "Black|" .. params.playerColor)
   else
     -- update circle color
     self.UI.setAttribute(circleId, "color", colorTable[type])
 
     -- show circle, hide arrow and connected
-    self.UI.setAttribute(circleId, "visibility", "Black|" .. params.playerColor)
     self.UI.setAttribute(arrowId, "visibility", "Black")
+    self.UI.setAttribute(circleId, "visibility", "Black|" .. params.playerColor)
     self.UI.setAttribute(connectedId, "visibility", "Black")
   end
 
@@ -137,7 +147,7 @@ function hideAll(playerColor)
 end
 
 function makeChoice(player, _, elementId)
-  if player.playerColor == "Black" then return end
+  if player.color == "Black" then return end
   
   local len = string.len(elementId)
   local row = tonumber(string.sub(elementId, len - 1, len - 1))

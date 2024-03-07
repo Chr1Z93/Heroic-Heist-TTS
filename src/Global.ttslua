@@ -124,7 +124,7 @@ function getTargetsForCardId(params)
     local step2 = (start2 >= end2) and -1 or 1
     for i = start1, end1, step1 do
       for j = start2, end2, step2 do
-        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
+        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult, connected = true }
         if validateTarget(newTarget, false, playerColor) then
           table.insert(targetGridList, newTarget)
         end
@@ -136,6 +136,15 @@ function getTargetsForCardId(params)
     local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
     if validateTarget(newTarget, false, playerColor) then
       table.insert(targetGridList, newTarget)
+    end
+  end
+
+  for _, outerData in ipairs(md.targetConnectionGroups or {}) do
+    for _, data in ipairs(outerData or {}) do
+      local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult, connected = true }
+      if validateTarget(newTarget, false, playerColor) then
+        table.insert(targetGridList, newTarget)
+      end
     end
   end
 
@@ -213,17 +222,17 @@ function displayTargetSelection(params)
         grid = getPlayerTokenGridPos(playerColor)
       }
       highlightBoard.call("showHighlight", hParams)
-
-      -- spawn temporary hidden zone to hide pointer
-      local data = getObjectFromName("HiddenZone" .. playerColor).getData()
-      data.Nickname = "HidePointerZone" .. playerColor
-      data.Tags = { "Temp" .. playerColor }
-      spawnObjectData({
-        data = data,
-        position = { 0, 3, 0 },
-        scale = { 25, 0.2, 25 }
-      })
     end
+
+    -- spawn temporary hidden zone to hide pointer
+    local data = getObjectFromName("HiddenZone" .. playerColor).getData()
+    data.Nickname = "HidePointerZone" .. playerColor
+    data.Tags = { "Temp" .. playerColor }
+    spawnObjectData({
+      data = data,
+      position = { 0, 3, 0 },
+      scale = { 25, 0.2, 25 }
+    })
   end
 end
 
