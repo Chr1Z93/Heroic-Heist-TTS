@@ -122,9 +122,24 @@ function getTargetsForCardId(params)
     local end2 = data.c2[2] + 5
     local step1 = (start1 >= end1) and -1 or 1
     local step2 = (start2 >= end2) and -1 or 1
+
+    -- get rotation for connected space attacking
+    local rot = 0
+    if start1 == end1 then
+      rot = 90
+    elseif start2 == end2 then
+      rot = 180
+    end
+
     for i = start1, end1, step1 do
       for j = start2, end2, step2 do
-        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult, connected = true }
+        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult, connected = true, rot = rot }
+
+        -- get potential 2nd rotation for corners
+        if ((i == start1 or i == end1) and start1 ~= end1) or ((j == start2 or j == end2) and start2 ~= end2) then
+          newTarget.rot2 = newTarget.rot + 90
+        end
+
         if validateTarget(newTarget, false, playerColor) then
           table.insert(targetGridList, newTarget)
         end
@@ -141,7 +156,7 @@ function getTargetsForCardId(params)
 
   for _, outerData in ipairs(md.targetConnectionGroups or {}) do
     for _, data in ipairs(outerData or {}) do
-      local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult, connected = true }
+      local newTarget = { row = grid.row + data.point[2] * mult, col = grid.col + data.point[1] * mult, connected = true, rot = data.rot, rot2 = data.rot2 }
       if validateTarget(newTarget, false, playerColor) then
         table.insert(targetGridList, newTarget)
       end
@@ -307,8 +322,6 @@ function resolveCard(params)
   local playerColor = params.playerColor
   local cardId = params.cardId
   local choiceGrid = params.choiceGrid
-  local row = choiceGrid.row
-  local col = choiceGrid.col
 
   -- get current position
   local grid = getPlayerTokenGridPos(playerColor)
@@ -323,32 +336,34 @@ function resolveCard(params)
   if not eGrid then return end
 
   if type > 0 then
-    if eGrid.row == row and eGrid.col == col then
+    log(choiceGrid)
+    log(eGrid)
+    if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
       maybeTakeControlOfRelic(playerColor)
     else
-      broadcastToAll("Missed target", "White")
+      broadcastToAll(playerColor .. "'s attack missed.", "White")
     end
   else
-    if eGrid.row == row and eGrid.col == col then
+    if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       broadcastToAll(playerColor .. "'s movement was blocked.", "White")
     else
       local mParams = {
         color = playerColor,
-        grid = { row = row, col = col }
+        grid = { row = choiceGrid.row, col = choiceGrid.col }
       }
       setPlayerTokenGridPos(mParams)
 
       -- maybe take control of relic
       local relicGridPos = getRelicTokenGridPos()
-      if relicGridPos.row == row and relicGridPos.col == col then
+      if relicGridPos.row == choiceGrid.row and relicGridPos.col == choiceGrid.col then
         maybeTakeControlOfRelic(playerColor)
       end
 
       -- get next location for direction move
       if md.directionMove then
         -- get target location
-        local newTarget = { row = 2 * row - grid.row, col = 2 * col - grid.col }
+        local newTarget = { row = 2 * choiceGrid.row - grid.row, col = 2 * choiceGrid.col - grid.col }
 
         -- if valid, repeat movement
         if validateTarget(newTarget, true, playerColor) then

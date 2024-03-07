@@ -74,6 +74,23 @@ function createXML()
                   color = "Red"
                 }
               }
+            },
+            {
+              tag = "Mask",
+              attributes = {
+                image = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/highlight_connected.png?raw=true",
+                id = color .. "Connected2Mask" .. row .. col,
+                rotation = "0 0 90"
+              },
+              children = {
+                tag = "Panel",
+                attributes = {
+                  id = color .. "Connected2" .. row .. col,
+                  onClick = "makeChoice",
+                  visibility = "Black",
+                  color = "Red"
+                }
+              }
             }
           }
         }
@@ -85,70 +102,96 @@ function createXML()
 end
 
 function showHighlight(params)
-  local panelId = params.playerColor .. "Panel" .. params.targetGrid.row .. params.targetGrid.col
-  local circleId = params.playerColor .. "Circle" .. params.targetGrid.row .. params.targetGrid.col
-  local arrowId = params.playerColor .. "Arrow" .. params.targetGrid.row .. params.targetGrid.col
-  local arrowMaskId = params.playerColor .. "ArrowMask" .. params.targetGrid.row .. params.targetGrid.col
-  local connectedId = params.playerColor .. "Connected" .. params.targetGrid.row .. params.targetGrid.col
-  local connectedMaskId = params.playerColor .. "ConnectedMask" .. params.targetGrid.row .. params.targetGrid.col
+  -- reassign some variables for readability
+  local playerColor = params.playerColor
+  local row = params.targetGrid.row
+  local col = params.targetGrid.col
+  local rot = params.targetGrid.rot
+  local rot2 = params.targetGrid.rot2
 
+  -- get metadata for the card
   local md = METADATA[params.cardId]
   local type = tostring(md.damage or 0)
 
   local showArrow = (md.directionMove ~= nil)
   local showConnected = (params.targetGrid.connected == true)
+  local showConnected2 = (rot2 ~= nil)
+  local elementsToShow = {}
 
-  -- update child color and visibility
+  -- handle large arrow movement
   if showArrow then
-    -- update rotation
+    elementsToShow.Arrow = true
     local arrowRot = getRotationBetweenGrids(params.targetGrid, params.grid)
-    self.UI.setAttribute(arrowMaskId, "rotation", "0 0 " .. arrowRot)
+    setSpecificRotation(row, col, "ArrowMask", playerColor, arrowRot)
 
-    -- show arrow, hide circle and connected
-    self.UI.setAttribute(arrowId, "visibility", "Black|" .. params.playerColor)
-    self.UI.setAttribute(circleId, "visibility", "Black")
-    self.UI.setAttribute(connectedId, "visibility", "Black")
+  -- handle connected spaces attacking
   elseif showConnected then
-    -- update rotation
-    local connectedRot = params.targetGrid.rot or 0
-    self.UI.setAttribute(connectedMaskId, "rotation", "0 0 " .. connectedRot)
+    elementsToShow.Connected = true
+    setSpecificRotation(row, col, "ConnectedMask", playerColor, rot or 0)
+    setSpecificColor(row, col, "Connected", playerColor, colorTable[type])
 
-    -- show connected, hide circle and arrow
-    self.UI.setAttribute(arrowId, "visibility", "Black")
-    self.UI.setAttribute(circleId, "visibility", "Black")
-    self.UI.setAttribute(connectedId, "visibility", "Black|" .. params.playerColor)
+    -- show additional layer for corners
+    if showConnected2 then
+      elementsToShow.Connected2 = true
+      setSpecificRotation(row, col, "Connected2Mask", playerColor, rot2)
+      setSpecificColor(row, col, "Connected2", playerColor, colorTable[type])
+    end
+
+  -- handle regular movement
   else
-    -- update circle color
-    self.UI.setAttribute(circleId, "color", colorTable[type])
-
-    -- show circle, hide arrow and connected
-    self.UI.setAttribute(arrowId, "visibility", "Black")
-    self.UI.setAttribute(circleId, "visibility", "Black|" .. params.playerColor)
-    self.UI.setAttribute(connectedId, "visibility", "Black")
+    elementsToShow.Circle = true
+    setSpecificColor(row, col, "Circle", playerColor, colorTable[type])
   end
 
-  -- update parent visibility
-  self.UI.setAttribute(panelId, "visibility", "Black|" .. params.playerColor)
-
-  -- store the current type
+  -- store the current cardId
+  local panelId = playerColor .. "Panel" .. row .. col
   self.UI.setAttribute(panelId, "cardId", params.cardId)
+
+  setSpecificVisibility(row, col, elementsToShow, playerColor)
 end
 
 -- hides all highlights for the specified playercolor
 function hideAll(playerColor)
   for row = 1, 5 do
     for col = 1, 5 do
-      self.UI.setAttribute(playerColor .. "Panel" .. row .. col, "visibility", "Black")
-      self.UI.setAttribute(playerColor .. "Circle" .. row .. col, "visibility", "Black")
-      self.UI.setAttribute(playerColor .. "Arrow" .. row .. col, "visibility", "Black")
-      self.UI.setAttribute(playerColor .. "Connected" .. row .. col, "visibility", "Black")
+      setSpecificVisibility(row, col, {}, playerColor)
     end
   end
 end
 
+function setSpecificVisibility(row, col, visibleTypes, playerColor)
+  local allTypes = { "Circle", "Arrow", "Connected", "Connected2" }
+  local showPanel = false
+  for _, type in ipairs(allTypes) do
+    local colorString = "Black"
+    if visibleTypes[type] == true then
+      colorString = "Black|" .. playerColor
+      showPanel = true
+    end
+    self.UI.setAttribute(playerColor .. type .. row .. col, "visibility", colorString)
+  end
+
+  -- update panel visibility
+  local colorString = "Black"
+  if showPanel then
+    colorString = "Black|" .. playerColor
+  end
+  self.UI.setAttribute(playerColor .. "Panel" .. row .. col, "visibility", colorString)
+end
+
+function setSpecificColor(row, col, type, playerColor, elementColor)
+  local elementID = playerColor .. type .. row .. col
+  self.UI.setAttribute(elementID, "color", elementColor)
+end
+
+function setSpecificRotation(row, col, type, playerColor, rot)
+  local elementID = playerColor .. type .. row .. col
+  self.UI.setAttribute(elementID, "rotation", "0 0 " .. rot)
+end
+
 function makeChoice(player, _, elementId)
   if player.color == "Black" then return end
-  
+
   local len = string.len(elementId)
   local row = tonumber(string.sub(elementId, len - 1, len - 1))
   local col = tonumber(string.sub(elementId, len, len))
