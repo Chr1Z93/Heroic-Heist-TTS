@@ -53,12 +53,17 @@ function updateDisplay()
     table.insert(positions, self.positionToWorld(snap.position))
   end
 
+  -- get rotation of deckmat
+  local selfRot = self.getRotation()
+
   -- get list of new cards
   local cardDataList = {}
 
   -- cards in hand (will be displayed face-up)
   for _, card in ipairs(Player[self.getMemo()].getHandObjects()) do
     local data = card.getData()
+    data.Transform.rotX = selfRot.x
+    data.Transform.rotY = selfRot.y
     data.Transform.rotZ = 0
     table.insert(cardDataList, data)
   end
@@ -67,11 +72,15 @@ function updateDisplay()
   for _, obj in ipairs(searchLib.onObject(PLAYERMAT, "isCardOrDeck")) do
     if obj.type == "Card" then
       local data = obj.getData()
+      data.Transform.rotX = selfRot.x
+      data.Transform.rotY = selfRot.y
       data.Transform.rotZ = obj.getRotation().z + 180
       table.insert(cardDataList, data)
     else
       local deckRotation = obj.getRotation()
       for _, cardData in ipairs(obj.getData().ContainedObjects) do
+        cardData.Transform.rotX = selfRot.x
+        cardData.Transform.rotY = selfRot.y
         cardData.Transform.rotZ = deckRotation.z + 180
         table.insert(cardDataList, cardData)
       end

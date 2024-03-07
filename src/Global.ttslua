@@ -22,6 +22,16 @@ function onLoad()
   playermatRed = getObjectFromName("PlayermatRed")
 end
 
+-- don't allow rotating cards in hands
+function onPlayerAction(player, action)
+  if action == Player.Action.RotateIncrementalLeft or action == Player.Action.RotateIncrementalRight then
+    broadcastToColor("Rotating cards in hands is disabled to avoid confusing cards.", player.color, "White")
+    return false
+  end
+
+  return true
+end
+
 -- grid goes from bottom left to top right (from 1/1 to 5/5)
 -- x from roughly local -0.6 to +0.6
 -- z from roughly local -0.6 to +0.6
