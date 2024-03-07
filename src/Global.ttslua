@@ -114,6 +114,7 @@ function getTargetsForCardId(params)
   local mult = direction[playerColor]
   local targetGridList = {}
 
+  -- add single spots for areas (these are connected)
   for _, data in ipairs(md.targetAreas or {}) do
     -- increase by 5 to avoid negative numbers
     local start1 = data.c1[1] + 5
@@ -147,6 +148,7 @@ function getTargetsForCardId(params)
     end
   end
 
+  -- add single spots
   for _, data in ipairs(md.targetSpots or {}) do
     local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
     if validateTarget(newTarget, false, playerColor) then
@@ -154,6 +156,7 @@ function getTargetsForCardId(params)
     end
   end
 
+  -- add spots for connectiongroups (these are connected)
   for _, outerData in ipairs(md.targetConnectionGroups or {}) do
     for _, data in ipairs(outerData or {}) do
       local newTarget = { row = grid.row + data.point[2] * mult, col = grid.col + data.point[1] * mult, connected = true, rot = data.rot, rot2 = data.rot2 }
@@ -216,6 +219,76 @@ function validateTarget(targetGrid, isMove, playerColor)
   else
     return false
   end
+end
+
+function getConnectedTargets(cardId, playerColor, startGrid)
+  local connectedTargets = {}
+  local md = METADATA[cardId]
+
+  -- get current position of player token
+  local grid = getPlayerTokenGridPos(playerColor)
+
+  -- get target locations
+  local direction = { Blue = 1, Red = -1 }
+  local mult = direction[playerColor]
+
+  -- go through targetAreas
+  for _, data in ipairs(md.targetAreas or {}) do
+    local match = false
+    local tempList = {}
+
+    -- increase by 5 to avoid negative numbers
+    local start1 = data.c1[1] + 5
+    local end1 = data.c2[1] + 5
+    local start2 = data.c1[2] + 5
+    local end2 = data.c2[2] + 5
+    local step1 = (start1 >= end1) and -1 or 1
+    local step2 = (start2 >= end2) and -1 or 1
+
+    for i = start1, end1, step1 do
+      for j = start2, end2, step2 do
+        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult }
+        table.insert(tempList, newTarget)
+
+        -- check if this is startGrid
+        if newTarget.row == startGrid.row and newTarget.col == startGrid.col then
+          match = true
+        end
+      end
+    end
+
+    -- if startGrid was contained in this set, add them all to the table
+    if match then
+      for _, target in ipairs(tempList) do
+        table.insert(connectedTargets, target)
+      end
+    end
+  end
+
+  -- go through connection groups
+  for _, outerData in ipairs(md.targetConnectionGroups or {}) do
+    local match = false
+    local tempList = {}
+
+    for _, data in ipairs(outerData or {}) do
+      local newTarget = { row = grid.row + data.point[2] * mult, col = grid.col + data.point[1] * mult }
+      table.insert(tempList, newTarget)
+
+      -- check if this is startGrid
+      if newTarget.row == startGrid.row and newTarget.col == startGrid.col then
+        match = true
+      end
+    end
+
+    -- if startGrid was contained in this set, add them all to the table
+    if match then
+      for _, target in ipairs(tempList) do
+        table.insert(connectedTargets, target)
+      end
+    end
+  end
+
+  return connectedTargets
 end
 
 -- display a button for each target location
@@ -320,28 +393,49 @@ end
 
 function resolveCard(params)
   local playerColor = params.playerColor
-  local cardId = params.cardId
   local choiceGrid = params.choiceGrid
+
+  -- get metadata
+  local md = METADATA[params.cardId]
+  local type = md.damage or 0
 
   -- get current position
   local grid = getPlayerTokenGridPos(playerColor)
 
-  -- get metadata
-  local md = METADATA[cardId]
-  local type = md.damage or 0
-
-  -- deal damage to enemy or move
+  -- get enemy position
   local enemyColor = oppositeColor(playerColor)
   local eGrid = getPlayerTokenGridPos(enemyColor)
-  if not eGrid then return end
 
+  -- early exit if token missing
+  if not eGrid or not grid then
+    broadcastToAll("Couldn't find both player tokens on the board.", "Red")
+    return
+  end
+
+  -- deal damage to enemy or move
   if type > 0 then
-    log(choiceGrid)
-    log(eGrid)
+    local hitSomething = false
+
+    -- check current position
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
       maybeTakeControlOfRelic(playerColor)
-    else
+      hitSomething = true
+    end
+
+    -- check connected spaces
+    local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
+    for _, target in ipairs(connectedTargets) do
+      if eGrid.row == target.row and eGrid.col == target.col then
+        gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
+        maybeTakeControlOfRelic(playerColor)
+        hitSomething = true
+        break
+      end
+    end
+
+    -- attack missed
+    if not hitSomething then
       broadcastToAll(playerColor .. "'s attack missed.", "White")
     end
   else
