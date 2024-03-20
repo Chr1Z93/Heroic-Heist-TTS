@@ -20,6 +20,7 @@ function onLoad()
   playArea = getObjectFromName("PlayArea")
   playermatBlue = getObjectFromName("PlayermatBlue")
   playermatRed = getObjectFromName("PlayermatRed")
+  roundTracker = getObjectFromName("RoundTracker")
 end
 
 -- don't allow rotating cards in hands
@@ -376,13 +377,25 @@ function resolveBothCards()
   local speedBlue = deckmatBlue.call("getSpeed")
   local speedRed = deckmatRed.call("getSpeed")
 
+  -- get round number
+  local round = roundTracker.getVar("val")
+  local modifier = 0
+
+  if round % 2 == 0 then
+    -- even round: slower speed goes first
+    modifier = -100
+  else
+    -- odd round: faster speed goes first
+    modifier = 100
+  end
+
   -- modify speed for movement before attack
   if isAttack(choices.Blue.cardId) then
-    speedBlue = speedBlue + 100
+    speedBlue = speedBlue + modifier
   end
 
   if isAttack(choices.Red.cardId) then
-    speedRed = speedRed + 100
+    speedRed = speedRed + modifier
   end
 
   if speedBlue > speedRed then

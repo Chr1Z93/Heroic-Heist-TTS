@@ -69,6 +69,11 @@ end
 function newGame()
   broadcastToAll("New Game!", "Green")
 
+  for _, color in ipairs({ "BLUE", "RED" }) do
+    -- get new speed value for deckmats
+    _G["DECKMAT_" .. color].call("setNewSpeed", math.random(1, 100))
+  end
+
   -- newRound
   nextRound(_, _, _, true)
 
@@ -126,9 +131,6 @@ function nextRound(_, _, _, noprint)
     -- reset health trackers
     _G["HEALTH_TRACKER_" .. color].call("updateVal", 100)
 
-    -- get new speed value for deckmats
-    _G["DECKMAT_" .. color].call("setNewSpeed", math.random(1, 100))
-
     -- give players copies of cards to assemble their deck
     local direction = { BLUE = -1, RED = 1 }
     local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
@@ -142,13 +144,75 @@ function nextRound(_, _, _, noprint)
 end
 
 function nextTurn()
-  local turn = TURN_TRACKER.getVar("val") + 1
-  broadcastToAll("Turn " .. turn, "Yellow")
-  TURN_TRACKER.call("addOrSubtract", 1)
+  local turn = TURN_TRACKER.call("addOrSubtract", 1)
+
+  -- determine winner after 8 turns
+  if turn == 9 then
+    -- get current owner of relic
+    local currentOwner
+
+    for _, obj in ipairs(getObjects()) do
+      if obj.getName() == "Relic" then
+        local currentGrid = convertPosToGrid(obj.getPosition())
+        if currentGrid.row == 0 then
+          currentOwner = "Blue"
+        elseif currentGrid.row == 6 then
+          currentOwner = "Red"
+        end
+        break
+      end
+    end
+
+    if currentOwner then
+      -- someone owns the relic
+      broadcastToAll(currentOwner .. " controls the relic at the end of turn 8.", "White")
+      roundWin(currentOwner)
+    else
+      -- no relic control, higher HP wins
+      local hpBlue = HEALTH_TRACKER_BLUE.getVar("val")
+      local hpRed = HEALTH_TRACKER_RED.getVar("val")
+
+      if hpBlue > hpRed then
+        broadcastToAll("Blue has more health the end of turn 8.", "White")
+        roundWin("Blue")
+      elseif hpRed > hpBlue then
+        broadcastToAll("Red has more health the end of turn 8.", "White")
+        roundWin("Red")
+      else
+        broadcastToAll("Players are tied at the end of turn 8 and the round ends in a draw.", "White")
+      end
+    end
+  else
+    broadcastToAll("Turn " .. turn, "Yellow")
+  end
 end
 
 function dealDamageToColor(params)
   local color = string.upper(params.color)
-  _G["HEALTH_TRACKER_" .. color].call("addOrSubtract", -1 * params.damage)
+  local newHP = _G["HEALTH_TRACKER_" .. color].call("addOrSubtract", -1 * params.damage)
   broadcastToAll(params.color .. " lost " .. params.damage .. " health.", "White")
+
+  if newHP == 0 then
+    broadcastToAll(params.color .. " has been defeated.", "White")
+    roundWin(oppositeColor(params.color))
+  end
+end
+
+function roundWin(color)
+  local round = ROUND_TRACKER.getVar("val")
+  local score = _G["SCORE_TRACKER_" .. color].call("addOrSubtract", 1)
+
+  if score == 2 then
+    broadcastToAll(color .. " wins round " .. round .. " and the game!", "White")
+  else
+    broadcastToAll(color .. " wins round " .. round .. ".", "White")
+  end
+end
+
+function oppositeColor(color)
+  if color == "Blue" then
+    return "Red"
+  else
+    return "Blue"
+  end
 end

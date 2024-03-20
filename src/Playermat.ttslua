@@ -34,7 +34,7 @@ function createButtons()
   buttonParameters.tooltip = "Click to draw until you have 3 cards"
   self.createButton(buttonParameters)
 
-  -- resolve card button
+  -- play card button
   buttonParameters.label = "Play Card"
   buttonParameters.click_function = "playCard"
   buttonParameters.position = { x = 1.243, y = 0.2, z = 1.2 }
@@ -53,10 +53,6 @@ function playCard(_, playerColor)
   local enemyMat = getObjectFromName("Playermat" .. enemyColor)
   local enemyCard = enemyMat.call("getActiveCard")
   if not enemyCard then return end
-
-  -- flip active card for both players
-  forceFaceUpActiveCard()
-  enemyMat.call("forceFaceUpActiveCard")
 
   local cardId = card.getGMNotes()
   Global.call("displayTargetSelection", {
