@@ -93,10 +93,13 @@ function maybeTakeControlOfRelic(newOwner)
     if obj.getName() == "Relic" then
       local currentOwner
       local currentGrid = convertPosToGrid(obj.getPosition())
+
       if currentGrid.row == 0 then
         currentOwner = "Blue"
       elseif currentGrid.row == 6 then
         currentOwner = "Red"
+      else
+        return
       end
 
       if currentOwner ~= newOwner then
@@ -326,7 +329,7 @@ function displayTargetSelection(params)
       highlightBoard.call("showHighlight", hParams)
     end
 
-    
+    -- spawnTempZone(playerColor)
   end
 end
 
@@ -448,18 +451,21 @@ function resolveCard(params)
   -- deal damage to enemy or move
   if type > 0 then
     local hitSomething = false
+    --log(eGrid.row .. "|" .. eGrid.col)
 
-    -- check current position
+    --[[ check current position
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
+      log(choiceGrid.row .. "|" .. choiceGrid.col)
       gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
       maybeTakeControlOfRelic(playerColor)
       hitSomething = true
-    end
+    end]]
 
     -- check connected spaces
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
+        --log(target.row .. "|" .. target.col)
         gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
         maybeTakeControlOfRelic(playerColor)
         hitSomething = true
