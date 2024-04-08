@@ -21,6 +21,9 @@ function onLoad()
   playermatBlue = getObjectFromName("PlayermatBlue")
   playermatRed = getObjectFromName("PlayermatRed")
   roundTracker = getObjectFromName("RoundTracker")
+
+  spawnTempZone("Blue")
+  spawnTempZone("Red")
 end
 
 -- don't allow rotating cards in hands
@@ -323,15 +326,7 @@ function displayTargetSelection(params)
       highlightBoard.call("showHighlight", hParams)
     end
 
-    -- spawn temporary hidden zone to hide pointer
-    local data = getObjectFromName("HiddenZone" .. playerColor).getData()
-    data.Nickname = "HidePointerZone" .. playerColor
-    data.Tags = { "Temp" .. playerColor }
-    spawnObjectData({
-      data = data,
-      position = { 0, 3, 0 },
-      scale = { 25, 0.2, 25 }
-    })
+    
   end
 end
 
@@ -351,7 +346,7 @@ function registerChoice(params)
   choices[playerColor] = params
   highlightBoard.call("hideAll", playerColor)
 
-  removeTempZone(playerColor)
+  -- removeTempZone(playerColor)
 
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
@@ -363,6 +358,21 @@ function registerChoice(params)
   else
     -- hide "Play a Card" button
     _G["playermat" .. playerColor].call("togglePlayButton")
+  end
+end
+
+-- spawn temporary hidden zone to hide pointer
+function spawnTempZone(playerColor)
+  local tempZones = getObjectsWithTag("Temp" .. playerColor)
+  if #tempZones == 0 then
+    local data = getObjectFromName("HiddenZone" .. playerColor).getData()
+    data.Nickname = "HidePointerZone" .. playerColor
+    data.Tags = { "Temp" .. playerColor }
+    spawnObjectData({
+      data = data,
+      position = { 0, 100, 0 },
+      scale = { 500, 200, 500 }
+    })
   end
 end
 

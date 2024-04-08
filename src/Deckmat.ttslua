@@ -50,7 +50,9 @@ function updateDisplay()
   -- get snap point positions
   local positions = {}
   for _, snap in ipairs(self.getSnapPoints()) do
-    table.insert(positions, self.positionToWorld(snap.position))
+    local pos = self.positionToWorld(snap.position)
+    pos.y = pos.y + 0.05
+    table.insert(positions, pos)
   end
 
   -- get rotation of deckmat
