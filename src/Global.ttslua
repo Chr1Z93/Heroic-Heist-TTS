@@ -88,7 +88,7 @@ function getRelicTokenGridPos()
   broadcastToAll("Couldn't find relic token.", "Orange")
 end
 
-function maybeTakeControlOfRelic(newOwner)
+function maybeTakeControlOfRelic(newOwner, pRow, pCol)
   for _, obj in ipairs(getObjects()) do
     if obj.getName() == "Relic" then
       local currentOwner
@@ -98,7 +98,10 @@ function maybeTakeControlOfRelic(newOwner)
         currentOwner = "Blue"
       elseif currentGrid.row == 6 then
         currentOwner = "Red"
-      else
+      end
+
+      -- if it is currently uncontrolled and not on the same position
+      if not currentOwner and not (currentGrid.row == pRow and currentGrid.col == pCol) then
         return
       end
 
@@ -488,10 +491,7 @@ function resolveCard(params)
       setPlayerTokenGridPos(mParams)
 
       -- maybe take control of relic
-      local relicGridPos = getRelicTokenGridPos()
-      if relicGridPos.row == choiceGrid.row and relicGridPos.col == choiceGrid.col then
-        maybeTakeControlOfRelic(playerColor)
-      end
+      maybeTakeControlOfRelic(playerColor, choiceGrid.row, choiceGrid.col)
 
       -- get next location for direction move
       if md.directionMove then
