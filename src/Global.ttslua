@@ -27,12 +27,15 @@ function onLoad()
 end
 
 -- don't allow rotating cards in hands
-function onPlayerAction(player, action)
+function onPlayerAction(player, action, targets)
   if action == Player.Action.RotateIncrementalLeft or action == Player.Action.RotateIncrementalRight then
-    broadcastToColor("Rotating cards in hands is disabled to avoid confusing cards.", player.color, "White")
-    return false
+    for _, obj in ipairs(targets) do
+      if obj.type == "Card" or obj.type == "Deck" then
+        broadcastToColor("Rotating cards is disabled to avoid confusing cards.", player.color, "White")
+        return false
+      end
+    end
   end
-
   return true
 end
 
@@ -88,20 +91,20 @@ function getRelicTokenGridPos()
   broadcastToAll("Couldn't find relic token.", "Orange")
 end
 
-function maybeTakeControlOfRelic(newOwner, pRow, pCol)
+function takeControlOfRelic(newOwner, move)
   for _, obj in ipairs(getObjects()) do
     if obj.getName() == "Relic" then
-      local currentOwner
       local currentGrid = convertPosToGrid(obj.getPosition())
 
+      local currentOwner
       if currentGrid.row == 0 then
         currentOwner = "Blue"
       elseif currentGrid.row == 6 then
         currentOwner = "Red"
       end
 
-      -- if it is currently uncontrolled and not on the same position
-      if not currentOwner and not (currentGrid.row == pRow and currentGrid.col == pCol) then
+      -- if uncontrolled and this is not a move
+      if not currentOwner and not move then
         return
       end
 
@@ -451,26 +454,16 @@ function resolveCard(params)
     return
   end
 
-  -- deal damage to enemy or move
+  -- deal damage to enemy
   if type > 0 then
     local hitSomething = false
-    --log(eGrid.row .. "|" .. eGrid.col)
-
-    --[[ check current position
-    if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
-      log(choiceGrid.row .. "|" .. choiceGrid.col)
-      gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
-      maybeTakeControlOfRelic(playerColor)
-      hitSomething = true
-    end]]
 
     -- check connected spaces
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
-        --log(target.row .. "|" .. target.col)
         gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
-        maybeTakeControlOfRelic(playerColor)
+        takeControlOfRelic(playerColor, false)
         hitSomething = true
         break
       end
@@ -480,6 +473,7 @@ function resolveCard(params)
     if not hitSomething then
       broadcastToAll(playerColor .. "'s attack missed.", "White")
     end
+  -- move action
   else
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       broadcastToAll(playerColor .. "'s movement was blocked.", "White")
@@ -491,7 +485,10 @@ function resolveCard(params)
       setPlayerTokenGridPos(mParams)
 
       -- maybe take control of relic
-      maybeTakeControlOfRelic(playerColor, choiceGrid.row, choiceGrid.col)
+      local relicGrid = getRelicTokenGridPos()
+      if (choiceGrid.row == relicGrid.row and choiceGrid.col == relicGrid.col) then
+        takeControlOfRelic(playerColor, true)
+      end
 
       -- get next location for direction move
       if md.directionMove then

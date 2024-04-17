@@ -62,7 +62,7 @@ function playCard(_, playerColor)
 end
 
 function discardActiveCard()
-  deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos)
+  deckLib.placeOrMergeIntoDeck(getActiveCard(), discardPos, self.getRotation())
 end
 
 function forceFaceUpActiveCard()
