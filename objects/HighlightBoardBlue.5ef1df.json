@@ -37,20 +37,20 @@
   "LuaScriptState": "",
   "MeasureMovement": false,
   "Name": "Custom_Tile",
-  "Nickname": "HighlightBoard",
+  "Nickname": "HighlightBoardBlue",
   "Snap": true,
   "Sticky": true,
   "Tooltip": false,
   "Transform": {
-    "posX": 0,
+    "posX": 33,
     "posY": 2.4,
-    "posZ": -0.65,
+    "posZ": -27.15,
     "rotX": 0,
     "rotY": 0,
     "rotZ": 0,
-    "scaleX": 11.85,
+    "scaleX": 5.925,
     "scaleY": 1,
-    "scaleZ": 11.85
+    "scaleZ": 5.925
   },
   "Value": 0,
   "XmlUI": ""

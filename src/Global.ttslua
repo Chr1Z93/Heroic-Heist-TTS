@@ -3,7 +3,10 @@ require("libraries/GuidReferences")
 
 NOT_INTERACTABLE = {
   "PlayArea",
-  "HighlightBoard"
+  "PlayAreaBlue",
+  "PlayAreaRed",
+  "HighlightBoardBlue",
+  "HighlightBoardRed"
 }
 
 choices = {}
@@ -16,14 +19,14 @@ function onLoad()
   deckmatBlue = getObjectFromName("DeckmatBlue")
   deckmatRed = getObjectFromName("DeckmatRed")
   gamePanel = getObjectFromName("GamePanel")
-  highlightBoard = getObjectFromName("HighlightBoard")
+  highlightBoardBlue = getObjectFromName("HighlightBoardBlue")
+  highlightBoardRed = getObjectFromName("HighlightBoardRed")
   playArea = getObjectFromName("PlayArea")
+  playAreaBlue = getObjectFromName("PlayAreaBlue")
+  playAreaRed = getObjectFromName("PlayAreaRed")
   playermatBlue = getObjectFromName("PlayermatBlue")
   playermatRed = getObjectFromName("PlayermatRed")
   roundTracker = getObjectFromName("RoundTracker")
-
-  spawnTempZone("Blue")
-  spawnTempZone("Red")
 end
 
 -- don't allow rotating cards in hands
@@ -318,7 +321,7 @@ function displayTargetSelection(params)
   local cardId = params.cardId
   local targetGridList = getTargetsForCardId(params)
 
-  highlightBoard.call("hideAll", playerColor)
+  _G["highlightBoard" .. playerColor].call("hideAll", playerColor)
 
   if #targetGridList == 0 then
     broadcastToColor("No valid target locations detected.", playerColor, "Orange")
@@ -330,10 +333,8 @@ function displayTargetSelection(params)
         cardId = cardId,
         grid = getPlayerTokenGridPos(playerColor)
       }
-      highlightBoard.call("showHighlight", hParams)
+      _G["highlightBoard" .. playerColor].call("showHighlight", hParams)
     end
-
-    -- spawnTempZone(playerColor)
   end
 end
 
@@ -351,9 +352,7 @@ function registerChoice(params)
 
   -- store choice
   choices[playerColor] = params
-  highlightBoard.call("hideAll", playerColor)
-
-  -- removeTempZone(playerColor)
+  _G["highlightBoard" .. playerColor].call("hideAll", playerColor)
 
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
@@ -365,27 +364,6 @@ function registerChoice(params)
   else
     -- hide "Play a Card" button
     _G["playermat" .. playerColor].call("togglePlayButton")
-  end
-end
-
--- spawn temporary hidden zone to hide pointer
-function spawnTempZone(playerColor)
-  local tempZones = getObjectsWithTag("Temp" .. playerColor)
-  if #tempZones == 0 then
-    local data = getObjectFromName("HiddenZone" .. playerColor).getData()
-    data.Nickname = "HidePointerZone" .. playerColor
-    data.Tags = { "Temp" .. playerColor }
-    spawnObjectData({
-      data = data,
-      position = { 0, 100, 0 },
-      scale = { 500, 200, 500 }
-    })
-  end
-end
-
-function removeTempZone(playerColor)
-  for _, obj in ipairs(getObjectsWithTag("Temp" .. playerColor)) do
-    obj.destruct()
   end
 end
 

@@ -64,6 +64,8 @@ function getReferences()
   SOURCE_ATTACK_DECK   = getObjectFromName("SourceAttackDeck")
   SOURCE_MOVEMENT_DECK = getObjectFromName("SourceMovementDeck")
   PLAYAREA             = getObjectFromName("PlayArea")
+  PLAYAREA_BLUE        = getObjectFromName("PlayAreaBlue")
+  PLAYAREA_RED         = getObjectFromName("PlayAreaRed")
 end
 
 function newGame()
@@ -89,6 +91,15 @@ function nextRound(_, _, _, noprint)
 
   -- reset play area
   for _, obj in ipairs(searchLib.onObject(PLAYAREA, "isUnlocked")) do
+    obj.destruct()
+  end
+
+  -- reset private playareas
+  for _, obj in ipairs(searchLib.onObject(PLAYAREA_BLUE, "isUnlocked")) do
+    obj.destruct()
+  end
+
+  for _, obj in ipairs(searchLib.onObject(PLAYAREA_RED, "isUnlocked")) do
     obj.destruct()
   end
 
