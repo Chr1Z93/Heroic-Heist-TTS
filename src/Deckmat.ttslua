@@ -100,8 +100,12 @@ function updateDisplay()
 
   -- spawn the card list
   for i, data in ipairs(cardDataList) do
-    local obj = spawnObjectData({ data = data })
-    obj.setPosition(positions[i])
-    obj.setLock(true)
+    -- force correct position before spawning
+    data.Transform.posX = positions[i].x
+    data.Transform.posY = positions[i].y
+    data.Transform.posZ = positions[i].z
+    data.Locked = true
+
+    spawnObjectData({ data = data })
   end
 end

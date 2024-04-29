@@ -203,7 +203,7 @@ end
 
 function roundWin(color)
   local round = ROUND_TRACKER.getVar("val")
-  local score = _G["SCORE_TRACKER_" .. color].call("addOrSubtract", 1)
+  local score = _G["SCORE_TRACKER_" .. string.upper(color)].call("addOrSubtract", 1)
 
   if score == 2 then
     broadcastToAll(color .. " wins round " .. round .. " and the game!", "White")

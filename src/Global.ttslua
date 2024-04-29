@@ -96,17 +96,17 @@ function takeControlOfRelic(newOwner, move)
     if obj.getName() == "Relic" then
       local currentGrid = convertPosToGrid(obj.getPosition())
 
-      local currentOwner
+      local currentOwner = nil
       if currentGrid.row == 0 then
         currentOwner = "Blue"
       elseif currentGrid.row == 6 then
         currentOwner = "Red"
-      end
-
-      -- if uncontrolled and this is not a move
-      if not currentOwner and not move then
+      elseif not move then
+        -- if uncontrolled and this is not a move
         return
       end
+
+      log(currentOwner)
 
       if currentOwner ~= newOwner then
         local newPos = { 0, 2.8, -15.13 }
