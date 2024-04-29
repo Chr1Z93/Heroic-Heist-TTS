@@ -106,8 +106,6 @@ function takeControlOfRelic(newOwner, move)
         return
       end
 
-      log(currentOwner)
-
       if currentOwner ~= newOwner then
         local newPos = { 0, 2.8, -15.13 }
         local newRot = { 0, 180, 0 }
