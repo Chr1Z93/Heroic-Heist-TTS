@@ -354,12 +354,12 @@ function registerChoice(params)
   choices[playerColor] = params
   _G["highlightBoard" .. playerColor].call("hideAll", playerColor)
 
+  -- hide "Play a Card" button
+  _G["playermat" .. playerColor].call("togglePlayButton")
+
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
     resolveBothCards()
-  else
-    -- hide "Play a Card" button
-    _G["playermat" .. playerColor].call("togglePlayButton")
   end
 end
 
@@ -429,6 +429,13 @@ function resolveCard(params)
   -- deal damage to enemy
   if type > 0 then
     local hitSomething = false
+
+    -- display explosion
+    local src = getObjectFromName("SourceExplosion")
+    local explosionData = src.getData().ContainedObjects[1]
+    local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid)})
+    explosion.AssetBundle.playLoopingEffect(2)
+    Wait.time(function() explosion.destruct() end, 2)
 
     -- check connected spaces
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)

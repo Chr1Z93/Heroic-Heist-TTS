@@ -76,15 +76,16 @@ function newGame()
     _G["DECKMAT_" .. color].call("setNewSpeed", math.random(1, 100))
   end
 
+  -- set round to 0
+  ROUND_TRACKER.call("updateVal", 0)
+
   -- newRound
   nextRound(_, _, _, true)
-
-  -- set round to 1
-  ROUND_TRACKER.call("updateVal", 1)
 end
 
 function nextRound(_, _, _, noprint)
-  local round = ROUND_TRACKER.getVar("val") + 1
+  -- add 1 to round tracker
+  local round = ROUND_TRACKER.call("addOrSubtract", 1)
   if not noprint then
     broadcastToAll("Round " .. round, "Orange")
   end
@@ -132,9 +133,6 @@ function nextRound(_, _, _, noprint)
 
   -- reset turn tracker
   TURN_TRACKER.call("updateVal", 1)
-
-  -- add 1 to round tracker
-  ROUND_TRACKER.call("addOrSubtract", 1)
 
   -- spawn relic
   local relicGrid = { row = 3, col = math.random(5) }

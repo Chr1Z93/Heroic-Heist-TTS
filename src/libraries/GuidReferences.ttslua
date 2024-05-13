@@ -21,6 +21,7 @@ GUID_LIST = {
   SourceRelic           = "1e886d",
   SourceAttackDeck      = "893ba7",
   SourceMovementDeck    = "f8b297",
+  SourceExplosion       = "b2b73f",
   TurnTracker           = "6707f1",
 }
 
