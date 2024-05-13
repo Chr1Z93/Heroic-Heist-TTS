@@ -166,8 +166,11 @@ function nextRound()
       local rot = mat.getRotation()
       SOURCE_MOVEMENT_DECK.takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
       SOURCE_ATTACK_DECK.takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
-      broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
     end
+  end
+
+  if round == 1 then
+    broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
   end
 end
 
