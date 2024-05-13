@@ -357,10 +357,6 @@ function registerChoice(params)
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
     resolveBothCards()
-
-    -- show "Play a Card" button
-    local otherColor = oppositeColor(playerColor)
-    _G["playermat" .. otherColor].call("togglePlayButton")
   else
     -- hide "Play a Card" button
     _G["playermat" .. playerColor].call("togglePlayButton")

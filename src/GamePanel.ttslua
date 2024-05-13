@@ -84,9 +84,36 @@ function newGame()
 end
 
 function nextRound(_, _, _, noprint)
+  local round = ROUND_TRACKER.getVar("val") + 1
   if not noprint then
-    local round = ROUND_TRACKER.getVar("val") + 1
     broadcastToAll("Round " .. round, "Orange")
+  end
+
+  -- announce player that goes first
+  local speedBlue = DECKMAT_BLUE.call("getSpeed")
+  local speedRed = DECKMAT_RED.call("getSpeed")
+
+  local firstPlayer = "Blue"
+  if round % 2 == 0 then
+    -- even round: slower speed goes first
+    if speedBlue >= speedRed then
+      firstPlayer = "Red"
+    end
+  else
+    -- odd round: faster speed goes first
+    if speedBlue < speedRed then
+      firstPlayer = "Red"
+    end
+  end
+
+  broadcastToAll(firstPlayer .. " goes first this round.", "Orange")
+
+  -- temporarily lock all cards and decks to exclude them from clean up
+  for _, obj in ipairs(getObjects()) do
+    if obj.type == "Card" or obj.type == "Deck" then
+      obj.setLock(true)
+      Wait.time(function() obj.setLock(false) end, 2)
+    end
   end
 
   -- reset play area
@@ -101,13 +128,6 @@ function nextRound(_, _, _, noprint)
 
   for _, obj in ipairs(searchLib.onObject(PLAYAREA_RED, "isUnlocked")) do
     obj.destruct()
-  end
-
-  -- remove all cards and decks
-  for _, obj in ipairs(getObjects()) do
-    if obj.type == "Card" or obj.type == "Deck" then
-      obj.destruct()
-    end
   end
 
   -- reset turn tracker
@@ -142,16 +162,17 @@ function nextRound(_, _, _, noprint)
     -- reset health trackers
     _G["HEALTH_TRACKER_" .. color].call("updateVal", 100)
 
-    -- give players copies of cards to assemble their deck
-    local direction = { BLUE = -1, RED = 1 }
-    local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
-    local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
-    local rot = mat.getRotation()
-    SOURCE_MOVEMENT_DECK.takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
-    SOURCE_ATTACK_DECK.takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
+    if round == 1 then
+      -- give players copies of cards to assemble their deck
+      local direction = { BLUE = -1, RED = 1 }
+      local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
+      local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
+      local rot = mat.getRotation()
+      SOURCE_MOVEMENT_DECK.takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
+      SOURCE_ATTACK_DECK.takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
+      broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
+    end
   end
-
-  broadcastToAll("Assemble your deck from the provided piles (4 from each).", "White")
 end
 
 function nextTurn()
@@ -198,6 +219,10 @@ function nextTurn()
     broadcastToAll("A round ends after 8 turns, press 'next Round' to proceed.", "White")
   else
     broadcastToAll("Turn " .. turn, "Yellow")
+
+  -- show "Play a Card" button
+  PLAYERMAT_BLUE.call("togglePlayButton")
+  PLAYERMAT_RED.call("togglePlayButton")
   end
 end
 
@@ -221,6 +246,9 @@ function roundWin(color)
   else
     broadcastToAll(color .. " wins round " .. round .. ".", "White")
   end
+
+  -- advance to next round
+  Wait.time(nextRound, 1)
 end
 
 function oppositeColor(color)
