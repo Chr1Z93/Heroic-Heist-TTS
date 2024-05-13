@@ -80,15 +80,12 @@ function newGame()
   ROUND_TRACKER.call("updateVal", 0)
 
   -- newRound
-  nextRound(_, _, _, true)
+  nextRound()
 end
 
-function nextRound(_, _, _, noprint)
+function nextRound()
   -- add 1 to round tracker
   local round = ROUND_TRACKER.call("addOrSubtract", 1)
-  if not noprint then
-    broadcastToAll("Round " .. round, "Orange")
-  end
 
   -- announce player that goes first
   local speedBlue = DECKMAT_BLUE.call("getSpeed")
@@ -107,7 +104,8 @@ function nextRound(_, _, _, noprint)
     end
   end
 
-  broadcastToAll(firstPlayer .. " goes first this round.", "Orange")
+  broadcastToAll("Round " .. round, "Orange")
+  broadcastToAll(firstPlayer .. " goes first this round.", firstPlayer)
 
   -- temporarily lock all cards and decks to exclude them from clean up
   for _, obj in ipairs(getObjects()) do
