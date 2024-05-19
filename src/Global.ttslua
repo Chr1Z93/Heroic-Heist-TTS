@@ -248,6 +248,7 @@ end
 function getConnectedTargets(cardId, playerColor, startGrid)
   local connectedTargets = {}
   local md = METADATA[cardId]
+  local addedStartGrid = false
 
   -- get current position of player token
   local grid = getPlayerTokenGridPos(playerColor)
@@ -283,6 +284,7 @@ function getConnectedTargets(cardId, playerColor, startGrid)
 
     -- if startGrid was contained in this set, add them all to the table
     if match then
+      addedStartGrid = true
       for _, target in ipairs(tempList) do
         table.insert(connectedTargets, target)
       end
@@ -306,10 +308,16 @@ function getConnectedTargets(cardId, playerColor, startGrid)
 
     -- if startGrid was contained in this set, add them all to the table
     if match then
+      addedStartGrid = true
       for _, target in ipairs(tempList) do
         table.insert(connectedTargets, target)
       end
     end
+  end
+
+  -- if startGrid is not added to the list yet, add it now
+  if not addedStartGrid then
+    table.insert(connectedTargets, startGrid)
   end
 
   return connectedTargets

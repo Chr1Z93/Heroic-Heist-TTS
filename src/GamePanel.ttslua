@@ -149,6 +149,9 @@ function nextRound()
       obj.destruct()
     end
 
+    -- make sure all buttons are shown
+    mat.call("createButtons")
+
     -- spawn player tokens
     _G["SOURCE_PLAYER_" .. color].takeObject({
       position = Global.call("convertGridToPos", _G["GRID_START_" .. color]),
