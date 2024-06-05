@@ -1,4 +1,25 @@
 {
+  "CameraStates": [
+    {
+      "AbsolutePosition": {
+        "x": 0,
+        "y": 58,
+        "z": -30
+      },
+      "Distance": 65,
+      "Position": {
+        "x": 0,
+        "y": -2.5,
+        "z": -5
+      },
+      "Rotation": {
+        "x": 65,
+        "y": 0,
+        "z": 0
+      },
+      "Zoomed": false
+    }
+  ],
   "ComponentTags": {
     "labels": []
   },
