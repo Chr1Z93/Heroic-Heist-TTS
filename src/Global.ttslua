@@ -1,5 +1,12 @@
 require("CardMetadata")
-require("libraries/GuidReferences")
+local searchLib = require("libraries/SearchLib")
+
+GridStart = {
+  Blue = { row = 1, col = 3 },
+  Red  = { row = 5, col = 3 }
+}
+
+direction = { Blue = -1, Red = 1 }
 
 NOT_INTERACTABLE = {
   "PlayArea",
@@ -9,24 +16,86 @@ NOT_INTERACTABLE = {
   "HighlightBoardRed"
 }
 
+GUID_LIST = {
+  DeckmatBlue           = "ea89a6",
+  DeckmatRed            = "42d92c",
+  GamePanel             = "2f5ddb",
+  HealthTrackerBlue     = "29b826",
+  HealthTrackerRed      = "5a08bb",
+  HiddenZoneBlue        = "9ed505",
+  HiddenZoneRed         = "06ee50",
+  HighlightBoardBlue    = "5ef1df",
+  HighlightBoardRed     = "7ef1df",
+  PlayArea              = "5ef1de",
+  PlayAreaBlue          = "76b598",
+  PlayAreaRed           = "7e4f92",
+  PlayermatBlue         = "1f4fe0",
+  PlayermatRed          = "9c3ece",
+  RoundTracker          = "bbd4df",
+  ScoreTrackerBlue      = "aba675",
+  ScoreTrackerRed       = "bf8e2e",
+  SourcePlayerTokenBlue = "fc5ff4",
+  SourcePlayerTokenRed  = "81eaa5",
+  SourceRelic           = "1e886d",
+  SourceAttackDeck      = "893ba7",
+  SourceMovementDeck    = "f8b297",
+  SourceExplosion       = "b2b73f",
+  TurnTracker           = "6707f1",
+}
+
 choices = {}
 
 function onLoad()
-  for _, name in ipairs(NOT_INTERACTABLE) do
-    local obj = getObjectFromName(name)
-    obj.interactable = false
+  math.randomseed(os.time())
+  getReferences()
+  setNotInteractable()
+  buttonCreationGP()
+end
+
+function getReferences()
+  for name, guid in pairs(GUID_LIST) do
+    _G[name] = getObjectFromGUID(guid)
   end
-  deckmatBlue = getObjectFromName("DeckmatBlue")
-  deckmatRed = getObjectFromName("DeckmatRed")
-  gamePanel = getObjectFromName("GamePanel")
-  highlightBoardBlue = getObjectFromName("HighlightBoardBlue")
-  highlightBoardRed = getObjectFromName("HighlightBoardRed")
-  playArea = getObjectFromName("PlayArea")
-  playAreaBlue = getObjectFromName("PlayAreaBlue")
-  playAreaRed = getObjectFromName("PlayAreaRed")
-  playermatBlue = getObjectFromName("PlayermatBlue")
-  playermatRed = getObjectFromName("PlayermatRed")
-  roundTracker = getObjectFromName("RoundTracker")
+end
+
+function setNotInteractable()
+  for _, name in ipairs(NOT_INTERACTABLE) do
+    _G[name].interactable = false
+  end
+end
+
+function buttonCreationGP()
+  -- shared parameters
+  local buttonParameters = {
+    function_owner = Global,
+    position = { x = 0, y = 0.2, z = 0 },
+    height = 1350,
+    width = 6000,
+    scale = { 0.1, 0.1, 0.1 },
+    font_size = 1000,
+    font_color = { 0, 0, 0 }
+  }
+
+  -- new game button
+  buttonParameters.label = "New Game"
+  buttonParameters.click_function = "newGame"
+  buttonParameters.position.z = -0.6
+  buttonParameters.tooltip = "Click to start a new game"
+  _G["GamePanel"].createButton(buttonParameters)
+
+  -- next round button
+  buttonParameters.label = "Next Round"
+  buttonParameters.click_function = "nextRound"
+  buttonParameters.tooltip = "Click to proceed to the next round"
+  buttonParameters.position.z = 0
+  _G["GamePanel"].createButton(buttonParameters)
+
+  -- next turn button
+  buttonParameters.label = "Next Turn"
+  buttonParameters.click_function = "nextTurn"
+  buttonParameters.tooltip = "Click to proceed to the next turn"
+  buttonParameters.position.z = 0.6
+  _G["GamePanel"].createButton(buttonParameters)
 end
 
 -- don't allow rotating cards in hands
@@ -46,7 +115,7 @@ end
 -- x from roughly local -0.6 to +0.6
 -- z from roughly local -0.6 to +0.6
 function convertPosToGrid(pos)
-  local lPos = playArea.positionToLocal(pos)
+  local lPos = _G["PlayArea"].positionToLocal(pos)
   local col = math.floor(lPos.x / 0.3 + 0.5) + 3
   local row = math.floor(lPos.z / 0.3 + 0.5) + 3
   return { row = row, col = col }
@@ -55,9 +124,9 @@ end
 -- find close snap point position
 function convertGridToPos(grid)
   local pos = { x = (grid.col - 3) * 0.3, z = (grid.row - 3) * 0.3 }
-  for _, snap in ipairs(playArea.getSnapPoints()) do
+  for _, snap in ipairs(_G["PlayArea"].getSnapPoints()) do
     if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
-      return playArea.positionToWorld(Vector(snap.position.x, 0.2, snap.position.z))
+      return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z))
     end
   end
 end
@@ -134,8 +203,7 @@ function getTargetsForCardId(params)
   local grid = getPlayerTokenGridPos(playerColor)
 
   -- get target locations
-  local direction = { Blue = 1, Red = -1 }
-  local mult = direction[playerColor]
+  local mult = -1 * direction[playerColor]
   local targetGridList = {}
 
   -- add single spots for areas (these are connected)
@@ -158,7 +226,12 @@ function getTargetsForCardId(params)
 
     for i = start1, end1, step1 do
       for j = start2, end2, step2 do
-        local newTarget = { row = grid.row + (j - 5) * mult, col = grid.col + (i - 5) * mult, connected = true, rot = rot }
+        local newTarget = {
+          row = grid.row + (j - 5) * mult,
+          col = grid.col + (i - 5) * mult,
+          connected = true,
+          rot = rot
+        }
 
         -- get potential 2nd rotation for corners
         if ((i == start1 or i == end1) and start1 ~= end1) or ((j == start2 or j == end2) and start2 ~= end2) then
@@ -174,7 +247,10 @@ function getTargetsForCardId(params)
 
   -- add single spots
   for _, data in ipairs(md.targetSpots or {}) do
-    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    local newTarget = {
+      row = grid.row + data[2] * mult,
+      col = grid.col + data[1] * mult
+    }
     if validateTarget(newTarget, false, playerColor) then
       table.insert(targetGridList, newTarget)
     end
@@ -183,7 +259,13 @@ function getTargetsForCardId(params)
   -- add spots for connectiongroups (these are connected)
   for _, outerData in ipairs(md.targetConnectionGroups or {}) do
     for _, data in ipairs(outerData or {}) do
-      local newTarget = { row = grid.row + data.point[2] * mult, col = grid.col + data.point[1] * mult, connected = true, rot = data.rot, rot2 = data.rot2 }
+      local newTarget = {
+        row = grid.row + data.point[2] * mult,
+        col = grid.col + data.point[1] * mult,
+        connected = true,
+        rot = data.rot,
+        rot2 = data.rot2
+      }
       if validateTarget(newTarget, false, playerColor) then
         table.insert(targetGridList, newTarget)
       end
@@ -191,7 +273,10 @@ function getTargetsForCardId(params)
   end
 
   for _, data in ipairs(md.fixedMove or {}) do
-    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    local newTarget = {
+      row = grid.row + data[2] * mult,
+      col = grid.col + data[1] * mult
+    }
     if validateTarget(newTarget, true, playerColor) then
       table.insert(targetGridList, newTarget)
     end
@@ -199,19 +284,28 @@ function getTargetsForCardId(params)
 
   -- only display close locations for directions
   for _, data in ipairs(md.directionMove or {}) do
-    local newTarget = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    local newTarget = {
+      row = grid.row + data[2] * mult,
+      col = grid.col + data[1] * mult
+    }
     if validateTarget(newTarget, true, playerColor) then
       table.insert(targetGridList, newTarget)
     end
   end
 
   for _, data in ipairs(md.choice1 or {}) do
-    local newGrid = { row = grid.row + data[2] * mult, col = grid.col + data[1] * mult }
+    local newGrid = {
+      row = grid.row + data[2] * mult,
+      col = grid.col + data[1] * mult
+    }
     if not validateTarget(newGrid, true, playerColor) then
       break
     else
       for _, data2 in ipairs(md.choice2 or {}) do
-        local newTarget = { row = newGrid.row + data2[2] * mult, col = newGrid.col + data2[1] * mult }
+        local newTarget = {
+          row = newGrid.row + data2[2] * mult,
+          col = newGrid.col + data2[1] * mult
+        }
         if validateTarget(newTarget, true, playerColor) then
           table.insert(targetGridList, newTarget)
         end
@@ -254,8 +348,7 @@ function getConnectedTargets(cardId, playerColor, startGrid)
   local grid = getPlayerTokenGridPos(playerColor)
 
   -- get target locations
-  local direction = { Blue = 1, Red = -1 }
-  local mult = direction[playerColor]
+  local mult = -1 * direction[playerColor]
 
   -- go through targetAreas
   for _, data in ipairs(md.targetAreas or {}) do
@@ -329,7 +422,7 @@ function displayTargetSelection(params)
   local cardId = params.cardId
   local targetGridList = getTargetsForCardId(params)
 
-  _G["highlightBoard" .. playerColor].call("hideAll", playerColor)
+  _G["HighlightBoard" .. playerColor].call("hideAll", playerColor)
 
   if #targetGridList == 0 then
     broadcastToColor("No valid target locations detected.", playerColor, "Orange")
@@ -341,7 +434,7 @@ function displayTargetSelection(params)
         cardId = cardId,
         grid = getPlayerTokenGridPos(playerColor)
       }
-      _G["highlightBoard" .. playerColor].call("showHighlight", hParams)
+      _G["HighlightBoard" .. playerColor].call("showHighlight", hParams)
     end
   end
 end
@@ -360,10 +453,10 @@ function registerChoice(params)
 
   -- store choice
   choices[playerColor] = params
-  _G["highlightBoard" .. playerColor].call("hideAll", playerColor)
+  _G["HighlightBoard" .. playerColor].call("hideAll", playerColor)
 
   -- hide "Play a Card" button
-  _G["playermat" .. playerColor].call("togglePlayButton")
+  _G["Playermat" .. playerColor].call("togglePlayButton")
 
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
@@ -373,11 +466,11 @@ end
 
 function resolveBothCards()
   -- get speed of players
-  local speedBlue = deckmatBlue.call("getSpeed")
-  local speedRed = deckmatRed.call("getSpeed")
+  local speedBlue = _G["DeckmatBlue"].call("getSpeed")
+  local speedRed = _G["DeckmatRed"].call("getSpeed")
 
   -- get round number
-  local round = roundTracker.getVar("val")
+  local round = _G["RoundTracker"].getVar("val")
   local modifier = 0
 
   if round % 2 == 0 then
@@ -439,9 +532,8 @@ function resolveCard(params)
     local hitSomething = false
 
     -- display explosion
-    local src = getObjectFromName("SourceExplosion")
-    local explosionData = src.getData().ContainedObjects[1]
-    local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid)})
+    local explosionData = _G["SourceExplosion"].getData().ContainedObjects[1]
+    local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid) })
     explosion.AssetBundle.playLoopingEffect(2)
     Wait.time(function() explosion.destruct() end, 2)
 
@@ -449,7 +541,7 @@ function resolveCard(params)
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
-        gamePanel.call("dealDamageToColor", { color = enemyColor, damage = type })
+        _G["GamePanel"].call("dealDamageToColor", { color = enemyColor, damage = type })
         takeControlOfRelic(playerColor, false)
         hitSomething = true
         break
@@ -458,9 +550,10 @@ function resolveCard(params)
 
     -- attack missed
     if not hitSomething then
-      broadcastToAll(playerColor .. "'s attack missed.", "White")
+      broadcastToAll(playerColor .. "'s attack missed (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")",
+        "White")
     end
-  -- move action
+    -- move action
   else
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       broadcastToAll(playerColor .. "'s movement was blocked.", "White")
@@ -492,5 +585,190 @@ function resolveCard(params)
   end
 
   -- discard active card
-  _G["playermat" .. playerColor].call("discardActiveCard")
+  _G["Playermat" .. playerColor].call("discardActiveCard")
+end
+
+-- Game Panel functions
+function newGame()
+  broadcastToAll("New Game!", "Green")
+
+  for _, color in ipairs({ "Blue", "Red" }) do
+    -- get new speed value for deckmats
+    _G["Deckmat" .. color].call("setNewSpeed", math.random(1, 100))
+  end
+
+  -- set round to 0
+  _G["RoundTracker"].call("updateVal", 0)
+
+  -- newRound
+  nextRound()
+end
+
+function nextRound()
+  -- add 1 to round tracker
+  local round = _G["RoundTracker"].call("addOrSubtract", 1)
+
+  -- announce player that goes first
+  local speedBlue = _G["DeckmatBlue"].call("getSpeed")
+  local speedRed = _G["DeckmatRed"].call("getSpeed")
+
+  local firstPlayer = "Blue"
+  if round % 2 == 0 then
+    -- even round: slower speed goes first
+    if speedBlue >= speedRed then
+      firstPlayer = "Red"
+    end
+  else
+    -- odd round: faster speed goes first
+    if speedBlue < speedRed then
+      firstPlayer = "Red"
+    end
+  end
+
+  broadcastToAll("Round " .. round, "Orange")
+  broadcastToAll(firstPlayer .. " goes first this round.", firstPlayer)
+
+  -- temporarily lock all cards and decks to exclude them from clean up
+  for _, obj in ipairs(getObjects()) do
+    if obj.type == "Card" or obj.type == "Deck" then
+      obj.setLock(true)
+      Wait.time(function() obj.setLock(false) end, 2)
+    end
+  end
+
+  -- reset play area
+  for _, obj in ipairs(searchLib.onObject(_G["PlayArea"], "isUnlocked")) do
+    obj.destruct()
+  end
+
+  -- reset private playareas
+  for _, obj in ipairs(searchLib.onObject(_G["PlayAreaBlue"], "isUnlocked")) do
+    obj.destruct()
+  end
+
+  for _, obj in ipairs(searchLib.onObject(_G["PlayAreaRed"], "isUnlocked")) do
+    obj.destruct()
+  end
+
+  -- reset turn tracker
+  _G["TurnTracker"].call("updateVal", 1)
+
+  -- spawn relic
+  local relicGrid = { row = 3, col = math.random(5) }
+  local yRotations = { 0, 90, 180, 270 }
+
+  _G["SourceRelic"].takeObject({
+    position = convertGridToPos(relicGrid),
+    rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
+  })
+
+  for _, color in ipairs({ "Blue", "Red" }) do
+    local mat = _G["Playermat" .. color]
+
+    -- reset playerboards
+    for _, obj in ipairs(searchLib.onObject(mat, "isUnlocked")) do
+      obj.destruct()
+    end
+
+    -- make sure all buttons are shown
+    mat.call("createButtons")
+
+    -- spawn player tokens
+    _G["SourcePlayerToken" .. color].takeObject({
+      position = convertGridToPos(GridStart[color]),
+      rotation = mat.getRotation()
+    })
+
+    -- reset health trackers
+    _G["HealthTracker" .. color].call("updateVal", 100)
+
+    if round == 1 then
+      -- give players copies of cards to assemble their deck
+      local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
+      local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
+      local rot = mat.getRotation()
+      _G["SourceMovementDeck"].takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
+      _G["SourceAttackDeck"].takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
+    end
+  end
+
+  if round == 1 then
+    broadcastToAll("Assemble your deck from the provided piles (4 attack and 4 movement cards).", "White")
+  end
+end
+
+function nextTurn()
+  local turn = _G["TurnTracker"].call("addOrSubtract", 1)
+
+  -- determine winner after 8 turns
+  if turn == 9 then
+    -- get current owner of relic
+    local currentOwner
+
+    for _, obj in ipairs(getObjects()) do
+      if obj.getName() == "Relic" then
+        local currentGrid = convertPosToGrid(obj.getPosition())
+        if currentGrid.row == 0 then
+          currentOwner = "Blue"
+        elseif currentGrid.row == 6 then
+          currentOwner = "Red"
+        end
+        break
+      end
+    end
+
+    if currentOwner then
+      -- someone owns the relic
+      broadcastToAll(currentOwner .. " controls the relic at the end of turn 8.", "White")
+      roundWin(currentOwner)
+    else
+      -- no relic control, higher HP wins
+      local hpBlue = _G["HealthTrackerBlue"].getVar("val")
+      local hpRed = _G["HealthTrackerRed"].getVar("val")
+
+      if hpBlue > hpRed then
+        broadcastToAll("Blue has more health the end of turn 8.", "White")
+        roundWin("Blue")
+      elseif hpRed > hpBlue then
+        broadcastToAll("Red has more health the end of turn 8.", "White")
+        roundWin("Red")
+      else
+        broadcastToAll("Players are tied at the end of turn 8 and the round ends in a draw.", "White")
+      end
+    end
+  elseif turn > 9 then
+    _G["TurnTracker"].call("addOrSubtract", -1)
+    broadcastToAll("A round ends after 8 turns, press 'next Round' to proceed.", "White")
+  else
+    broadcastToAll("Turn " .. turn, "Yellow")
+
+    -- show "Play a Card" button
+    _G["PlayermatBlue"].call("togglePlayButton")
+    _G["PlayermatRed"].call("togglePlayButton")
+  end
+end
+
+function dealDamageToColor(params)
+  local color = string.upper(params.color)
+  local newHP = _G["HealthTracker" .. color].call("addOrSubtract", -1 * params.damage)
+  broadcastToAll(params.color .. " lost " .. params.damage .. " health.", "White")
+
+  if newHP == 0 then
+    broadcastToAll(params.color .. " has been defeated.", "White")
+    roundWin(oppositeColor(params.color))
+  end
+end
+
+function roundWin(color)
+  local round = _G["RoundTracker"].getVar("val")
+  local score = _G["ScoreTracker" .. string.upper(color)].call("addOrSubtract", 1)
+
+  if score == 2 then
+    broadcastToAll(color .. " wins round " .. round .. " and the game!", "White")
+  else
+    broadcastToAll(color .. " wins round " .. round .. ".", "White")
+  end
+
+  -- advance to next round
+  Wait.time(nextRound, 1)
 end

@@ -1,5 +1,3 @@
-require("libraries/GuidReferences")
-
 local searchLib = require("libraries/SearchLib")
 local deckLib = require("libraries/DeckLib")
 
@@ -46,7 +44,7 @@ function playCard(_, playerColor)
   local card = getActiveCard()
   if not card then return end
 
-  local enemyMat = getObjectFromName("Playermat" .. enemyColor)
+  local enemyMat = Global.getVar("Playermat" .. enemyColor)
   local enemyCard = enemyMat.call("getActiveCard")
   if not enemyCard then return end
 

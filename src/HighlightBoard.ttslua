@@ -1,5 +1,4 @@
 require("CardMetadata")
-require("libraries/GuidReferences")
 
 local colorTable = {
   ["0"] = "Green",
