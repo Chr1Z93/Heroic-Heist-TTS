@@ -16,15 +16,15 @@ function createXML()
   for _, color in ipairs({ "Blue", "Red" }) do
     for row = 1, 5 do
       for col = 1, 5 do
-        local xPos = -82 + (col - 1) * 41
-        local yPos = -82 + (row - 1) * 41
-        local zPos = -75
+        local xPos = -81 + (col - 1) * 40.5
+        local yPos = -75 + (row - 1) * 40
+        local zPos = -50
         local elem = {
           tag = "Panel",
           attributes = {
             id         = color .. "Panel" .. row .. col,
-            width      = 33,
-            height     = 33,
+            width      = 32,
+            height     = 32,
             position   = xPos .. " " .. yPos .. " " .. zPos,
             visibility = "Black"
           },

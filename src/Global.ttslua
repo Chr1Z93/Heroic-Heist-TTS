@@ -45,13 +45,26 @@ GUID_LIST = {
 
 choices = {}
 
-function onLoad()
+function onSave()
+  return JSON.encode({ guids = GUID_LIST })
+end
+
+function onLoad(savedData)
+  if savedData and savedData ~= "" then
+    local loadedData = JSON.decode(savedData)
+    GUID_LIST = loadedData.guids
+  end
+
   math.randomseed(os.time())
   getReferences()
   setNotInteractable()
   buttonCreationGP()
+
+  -- store explosion data
+  explosionData = _G["SourceExplosion"].getData().ContainedObjects[1]
 end
 
+-- grab object references
 function getReferences()
   for name, guid in pairs(GUID_LIST) do
     _G[name] = getObjectFromGUID(guid)
@@ -64,6 +77,7 @@ function setNotInteractable()
   end
 end
 
+-- create buttons on the game panel
 function buttonCreationGP()
   -- shared parameters
   local buttonParameters = {
@@ -131,66 +145,30 @@ function convertGridToPos(grid)
   end
 end
 
--- get current position of player token
-function getPlayerTokenGridPos(color)
-  for _, obj in ipairs(getObjects()) do
-    if obj.getName() == "Player" .. color then
-      return convertPosToGrid(obj.getPosition())
-    end
-  end
-
-  broadcastToAll("Couldn't find " .. color .. " player token.", "Orange")
-end
-
-function setPlayerTokenGridPos(params)
-  for _, obj in ipairs(getObjects()) do
-    if obj.getName() == "Player" .. params.color then
-      obj.setPosition(convertGridToPos(params.grid))
-      return
-    end
-  end
-
-  broadcastToAll("Couldn't find " .. params.color .. " player token.", "Orange")
-end
-
-function getRelicTokenGridPos()
-  for _, obj in ipairs(getObjects()) do
-    if obj.getName() == "Relic" then
-      return convertPosToGrid(obj.getPosition())
-    end
-  end
-
-  broadcastToAll("Couldn't find relic token.", "Orange")
-end
-
 function takeControlOfRelic(newOwner, move)
-  for _, obj in ipairs(getObjects()) do
-    if obj.getName() == "Relic" then
-      local currentGrid = convertPosToGrid(obj.getPosition())
+  local currentGrid = convertPosToGrid(_G["Relic"].getPosition())
 
-      local currentOwner = nil
-      if currentGrid.row == 0 then
-        currentOwner = "Blue"
-      elseif currentGrid.row == 6 then
-        currentOwner = "Red"
-      elseif not move then
-        -- if uncontrolled and this is not a move
-        return
-      end
+  local currentOwner = nil
+  if currentGrid.row == 0 then
+    currentOwner = "Blue"
+  elseif currentGrid.row == 6 then
+    currentOwner = "Red"
+  elseif not move then
+    -- if uncontrolled and this is not a move
+    return
+  end
 
-      if currentOwner ~= newOwner then
-        local newPos = { 0, 2.8, -15.13 }
-        local newRot = { 0, 180, 0 }
-        if newOwner == "Red" then
-          newPos = { 0, 2.8, 14.45 }
-          newRot = { 0, 0, 0 }
-        end
-        obj.setPosition(newPos)
-        obj.setRotation(newRot)
-        broadcastToAll(newOwner .. " took control of the relic.", "White")
-      end
-      return
+  if currentOwner ~= newOwner then
+    local newPos = { 0, 2.8, -15.13 }
+    local newRot = { 0, 180, 0 }
+    if newOwner == "Red" then
+      newPos = { 0, 2.8, 14.45 }
+      newRot = { 0, 0, 0 }
     end
+    _G["Relic"].setPosition(newPos)
+    _G["Relic"].setRotation(newRot)
+    broadcastToAll(newOwner .. " took control of the relic.", "White")
+    syncPrivateBoards()
   end
 end
 
@@ -200,7 +178,7 @@ function getTargetsForCardId(params)
   local md = METADATA[cardId]
 
   -- get current position of player token
-  local grid = getPlayerTokenGridPos(playerColor)
+  local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
 
   -- get target locations
   local mult = -1 * direction[playerColor]
@@ -323,7 +301,7 @@ function validateTarget(targetGrid, isMove, playerColor)
     else
       -- get enemy position and check if he blocks
       local enemyColor = oppositeColor(playerColor)
-      local grid = getPlayerTokenGridPos(enemyColor)
+      local grid = convertPosToGrid(_G["PlayerToken" .. enemyColor].getPosition())
       if not grid then
         return false
       end
@@ -345,7 +323,7 @@ function getConnectedTargets(cardId, playerColor, startGrid)
   local addedStartGrid = false
 
   -- get current position of player token
-  local grid = getPlayerTokenGridPos(playerColor)
+  local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
 
   -- get target locations
   local mult = -1 * direction[playerColor]
@@ -432,7 +410,7 @@ function displayTargetSelection(params)
         playerColor = playerColor,
         targetGrid = targetGrid,
         cardId = cardId,
-        grid = getPlayerTokenGridPos(playerColor)
+        grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
       }
       _G["HighlightBoard" .. playerColor].call("showHighlight", hParams)
     end
@@ -515,11 +493,11 @@ function resolveCard(params)
   local type = md.damage or 0
 
   -- get current position
-  local grid = getPlayerTokenGridPos(playerColor)
+  local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
 
   -- get enemy position
   local enemyColor = oppositeColor(playerColor)
-  local eGrid = getPlayerTokenGridPos(enemyColor)
+  local eGrid = convertPosToGrid(_G["PlayerToken" .. enemyColor].getPosition())
 
   -- early exit if token missing
   if not eGrid or not grid then
@@ -532,7 +510,6 @@ function resolveCard(params)
     local hitSomething = false
 
     -- display explosion
-    local explosionData = _G["SourceExplosion"].getData().ContainedObjects[1]
     local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid) })
     explosion.AssetBundle.playLoopingEffect(2)
     Wait.time(function() explosion.destruct() end, 2)
@@ -558,14 +535,11 @@ function resolveCard(params)
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       broadcastToAll(playerColor .. "'s movement was blocked.", "White")
     else
-      local mParams = {
-        color = playerColor,
-        grid = { row = choiceGrid.row, col = choiceGrid.col }
-      }
-      setPlayerTokenGridPos(mParams)
+      _G["PlayerToken" .. playerColor].setPosition(convertGridToPos(choiceGrid))
+      syncPrivateBoards()
 
       -- maybe take control of relic
-      local relicGrid = getRelicTokenGridPos()
+      local relicGrid = convertPosToGrid(_G["Relic"].getPosition())
       if (choiceGrid.row == relicGrid.row and choiceGrid.col == relicGrid.col) then
         takeControlOfRelic(playerColor, true)
       end
@@ -590,6 +564,12 @@ end
 
 -- Game Panel functions
 function newGame()
+  for _, obj in ipairs(getObjects()) do
+    if obj.locked == false then
+      obj.destruct()
+    end
+  end
+
   broadcastToAll("New Game!", "Green")
 
   for _, color in ipairs({ "Blue", "Red" }) do
@@ -657,10 +637,12 @@ function nextRound()
   local relicGrid = { row = 3, col = math.random(5) }
   local yRotations = { 0, 90, 180, 270 }
 
-  _G["SourceRelic"].takeObject({
+  _G["Relic"] = _G["SourceRelic"].takeObject({
     position = convertGridToPos(relicGrid),
-    rotation = { x = 0, y = yRotations[math.random(4)], z = 0 }
+    rotation = { x = 0, y = yRotations[math.random(4)], z = 0 },
+    smooth = false
   })
+  GUID_LIST["Relic"] = _G["Relic"].getGUID()
 
   for _, color in ipairs({ "Blue", "Red" }) do
     local mat = _G["Playermat" .. color]
@@ -674,10 +656,12 @@ function nextRound()
     mat.call("createButtons")
 
     -- spawn player tokens
-    _G["SourcePlayerToken" .. color].takeObject({
+    _G["PlayerToken" .. color] = _G["SourcePlayerToken" .. color].takeObject({
       position = convertGridToPos(GridStart[color]),
-      rotation = mat.getRotation()
+      rotation = mat.getRotation(),
+      smooth = false
     })
+    GUID_LIST["PlayerToken" .. color] = _G["PlayerToken" .. color].getGUID()
 
     -- reset health trackers
     _G["HealthTracker" .. color].call("updateVal", 100)
@@ -692,6 +676,8 @@ function nextRound()
     end
   end
 
+  syncPrivateBoards()
+
   if round == 1 then
     broadcastToAll("Assemble your deck from the provided piles (4 attack and 4 movement cards).", "White")
   end
@@ -705,16 +691,11 @@ function nextTurn()
     -- get current owner of relic
     local currentOwner
 
-    for _, obj in ipairs(getObjects()) do
-      if obj.getName() == "Relic" then
-        local currentGrid = convertPosToGrid(obj.getPosition())
-        if currentGrid.row == 0 then
-          currentOwner = "Blue"
-        elseif currentGrid.row == 6 then
-          currentOwner = "Red"
-        end
-        break
-      end
+    local currentGrid = convertPosToGrid(_G["Relic"].getPosition())
+    if currentGrid.row == 0 then
+      currentOwner = "Blue"
+    elseif currentGrid.row == 6 then
+      currentOwner = "Red"
     end
 
     if currentOwner then
@@ -745,6 +726,43 @@ function nextTurn()
     -- show "Play a Card" button
     _G["PlayermatBlue"].call("togglePlayButton")
     _G["PlayermatRed"].call("togglePlayButton")
+  end
+end
+
+-- re-sync boards if a tile is moved
+function onObjectDrop(_, object)
+  if object.type == "Tile" then
+    Wait.time(syncPrivateBoards, 0.5)
+  end
+end
+
+-- sync the private boards with the main play area
+function syncPrivateBoards()
+  for _, color in ipairs({ "Blue", "Red" }) do
+    for _, tokenName in ipairs({ "Relic", "PlayerTokenBlue", "PlayerTokenRed" }) do
+      -- make sure a copy of the token exists
+      if not _G[tokenName .. "Copy" .. color] then
+        _G[tokenName .. "Copy" .. color] = _G[tokenName].clone()
+        GUID_LIST[tokenName .. "Copy" .. color] = _G[tokenName .. "Copy" .. color].getGUID()
+
+        -- lock copy
+        _G[tokenName .. "Copy" .. color].setLock(true)
+        _G[tokenName .. "Copy" .. color].interactable = false
+
+        -- half the scale
+        local scale = _G[tokenName].getScale() * Vector(0.5, 1, 0.5)
+        _G[tokenName .. "Copy" .. color].setScale(scale)
+      end
+
+      -- get position for token
+      local publicPos = _G[tokenName].getPosition()
+      local localPos = _G["PlayArea"].positionToLocal(publicPos)
+      local copyPos = _G["PlayArea" .. color].positionToWorld(localPos):setAt("y", 2.8)
+
+      -- move copies
+      _G[tokenName .. "Copy" .. color].setPosition(copyPos)
+      _G[tokenName .. "Copy" .. color].setRotation(_G[tokenName].getRotation())
+    end
   end
 end
 
