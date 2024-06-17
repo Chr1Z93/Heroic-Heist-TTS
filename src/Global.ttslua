@@ -491,7 +491,7 @@ end
 function resolveCard(params)
   local playerColor = params.playerColor
   local choiceGrid = params.choiceGrid
-  log(playerColor)
+
   -- get metadata
   local md = METADATA[params.cardId]
   local type = md.damage or 0
