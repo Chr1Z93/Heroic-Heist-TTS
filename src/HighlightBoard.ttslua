@@ -18,7 +18,7 @@ function createXML()
       for col = 1, 5 do
         local xPos = -81 + (col - 1) * 40.5
         local yPos = -75 + (row - 1) * 40
-        local zPos = -50
+        local zPos = -55
         local elem = {
           tag = "Panel",
           attributes = {

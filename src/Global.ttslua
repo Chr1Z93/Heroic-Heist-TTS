@@ -153,12 +153,11 @@ function takeControlOfRelic(newOwner, move)
     currentOwner = "Blue"
   elseif currentGrid.row == 6 then
     currentOwner = "Red"
-  elseif not move then
-    -- if uncontrolled and this is not a move
-    return
   end
 
-  if currentOwner ~= newOwner then
+  -- take control if uncontrolled + moving or if controlled by other player
+  if (currentOwner and currentOwner ~= newOwner) or
+      (currentOwner == nil and move == true) then
     local newPos = { 0, 2.8, -15.13 }
     local newRot = { 0, 180, 0 }
     if newOwner == "Red" then
@@ -266,7 +265,7 @@ function getTargetsForCardId(params)
       row = grid.row + data[2] * mult,
       col = grid.col + data[1] * mult
     }
-    if validateTarget(newTarget, true, playerColor) then
+    if validateTarget(newTarget, true, playerColor, true) then
       table.insert(targetGridList, newTarget)
     end
   end
@@ -294,11 +293,16 @@ function getTargetsForCardId(params)
   return targetGridList
 end
 
-function validateTarget(targetGrid, isMove, playerColor)
+function validateTarget(targetGrid, isMove, playerColor, noBlock)
   if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
     if not isMove then
       return true
     else
+      -- skip blocking for large arrow movement
+      if noBlock then
+        return true
+      end
+
       -- get enemy position and check if he blocks
       local enemyColor = oppositeColor(playerColor)
       local grid = convertPosToGrid(_G["PlayerToken" .. enemyColor].getPosition())
@@ -487,7 +491,7 @@ end
 function resolveCard(params)
   local playerColor = params.playerColor
   local choiceGrid = params.choiceGrid
-
+  log(playerColor)
   -- get metadata
   local md = METADATA[params.cardId]
   local type = md.damage or 0
@@ -595,12 +599,12 @@ function nextRound()
   local firstPlayer = "Blue"
   if round % 2 == 0 then
     -- even round: slower speed goes first
-    if speedBlue >= speedRed then
+    if speedBlue < speedRed then
       firstPlayer = "Red"
     end
   else
     -- odd round: faster speed goes first
-    if speedBlue < speedRed then
+    if speedBlue >= speedRed then
       firstPlayer = "Red"
     end
   end
