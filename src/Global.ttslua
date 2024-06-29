@@ -164,9 +164,11 @@ function takeControlOfRelic(newOwner, move)
       newPos = { 0, 2.8, 14.45 }
       newRot = { 0, 0, 0 }
     end
-    _G["Relic"].setPosition(newPos)
+    local reason = move and "a movement card)." or "an attack card)."
+    broadcastToAll(getColoredName(newOwner) .. " took control of the relic (because of " .. reason, "White")
+    _G["Relic"].setPositionSmooth(newPos)
+    coWait(1)
     _G["Relic"].setRotation(newRot)
-    broadcastToAll(newOwner .. " took control of the relic.", "White")
     syncPrivateBoards()
   end
 end
@@ -431,7 +433,7 @@ end
 
 function registerChoice(params)
   local playerColor = params.playerColor
-  printToAll(playerColor .. " made a choice.", "White")
+  printToAll(getColoredName(playerColor) .. " made a choice.", "White")
 
   -- store choice
   choices[playerColor] = params
@@ -442,7 +444,7 @@ function registerChoice(params)
 
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
-    resolveBothCards()
+    startLuaCoroutine(Global, "resolveBothCards")
   end
 end
 
@@ -473,15 +475,25 @@ function resolveBothCards()
   end
 
   if speedBlue > speedRed then
+    printToAll(getColoredName("Red") .. "'s card gets resolved first.")
     resolveCard(choices.Red)
+    coWait(1.5)
     resolveCard(choices.Blue)
   else
+    printToAll(getColoredName("Blue") .. "'s card gets resolved first.")
     resolveCard(choices.Blue)
+    coWait(1.5)
     resolveCard(choices.Red)
   end
 
   -- reset "choices" table
   choices = {}
+  return 1
+end
+
+function coWait(t)
+  local now = Time.time
+  repeat coroutine.yield(0) until Time.time > now + t
 end
 
 function isAttack(cardId)
@@ -509,8 +521,10 @@ function resolveCard(params)
     return
   end
 
-  -- deal damage to enemy
   if type > 0 then
+    printToAll(getColoredName(playerColor) .. " played an attack card.")
+
+    -- maybe deal damage to enemy
     local hitSomething = false
 
     -- display explosion
@@ -531,15 +545,16 @@ function resolveCard(params)
 
     -- attack missed
     if not hitSomething then
-      broadcastToAll(playerColor .. "'s attack missed (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")",
-        "White")
+      broadcastToAll(getColoredName(playerColor) .. "'s attack missed (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
     end
-    -- move action
   else
+    printToAll(getColoredName(playerColor) .. " played a movement card.")
+    -- move action
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
-      broadcastToAll(playerColor .. "'s movement was blocked.", "White")
+      broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
     else
-      _G["PlayerToken" .. playerColor].setPosition(convertGridToPos(choiceGrid))
+      _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(choiceGrid))
+      coWait(1)
       syncPrivateBoards()
 
       -- maybe take control of relic
@@ -556,6 +571,7 @@ function resolveCard(params)
         -- if valid, repeat movement
         if validateTarget(newTarget, true, playerColor) then
           params.choiceGrid = newTarget
+          coWait(1)
           resolveCard(params)
         end
       end
@@ -609,8 +625,10 @@ function nextRound()
     end
   end
 
+  broadcastToAll("---------", "Orange")
   broadcastToAll("Round " .. round, "Orange")
-  broadcastToAll(firstPlayer .. " goes first this round.", firstPlayer)
+  broadcastToAll("---------", "Orange")
+  broadcastToAll(getColoredName(firstPlayer) .. " goes first this round.")
 
   -- temporarily lock all cards and decks to exclude them from clean up
   for _, obj in ipairs(getObjects()) do
@@ -794,3 +812,14 @@ function roundWin(color)
   -- advance to next round
   Wait.time(nextRound, 1)
 end
+
+function getColoredName(playerColor)
+  local displayName = playerColor
+  if Player[playerColor].steam_name then
+    displayName = Player[playerColor].steam_name
+  end
+
+  -- add bb-code
+  return "[" .. Color.fromString(playerColor):toHex() .. "]" .. displayName .. "[-]"
+end
+
