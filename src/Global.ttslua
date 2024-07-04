@@ -449,46 +449,60 @@ function registerChoice(params)
 end
 
 function resolveBothCards()
+  local resolveOrder = getResolveOrder()
+
+  printToAll(getColoredName(resolveOrder[1]) .. "'s card gets resolved first.")
+  resolveCard(resolveOrder[1])
+  coWait(1.5)
+  resolveCard(resolveOrder[2])
+
+  -- reset "choices" table
+  choices = {}
+  return 1
+end
+
+function getResolveOrder()
+  -- define returnTables
+  local resolveOrder = {
+    Blue = { "Blue", "Red" },
+    Red = { "Red", "Blue" }
+  }
   -- get speed of players
   local speedBlue = _G["DeckmatBlue"].call("getSpeed")
   local speedRed = _G["DeckmatRed"].call("getSpeed")
 
   -- get round number
-  local round = _G["RoundTracker"].getVar("val")
-  local modifier = 0
+  local roundNumber = _G["RoundTracker"].getVar("val")
 
-  if round % 2 == 0 then
-    -- even round: slower speed goes first
-    modifier = -100
+  -- get card type
+  local isAttackBlue = isAttack(choices.Blue.cardId)
+  local isAttackRed = isAttack(choices.Red.cardId)
+
+  -- check if both players played the same type of card
+  if isAttackBlue == isAttackRed then
+    if roundNumber % 2 == 0 then
+      -- even round, player with the lower speed goes first
+      if speedBlue < speedRed then
+        return resolveOrder.Blue
+      else
+        return resolveOrder.Red
+      end
+    else
+      -- odd round, player with the higher speed goes first
+      if speedBlue < speedRed then
+        return resolveOrder.Red
+      else
+        return resolveOrder.Blue
+      end
+    end
   else
-    -- odd round: faster speed goes first
-    modifier = 100
+    -- card types are different: movement card goes first
+    if isAttackBlue then
+      return resolveOrder.Red
+    else
+      return resolveOrder.Blue
+    end
   end
-
-  -- modify speed for movement before attack
-  if isAttack(choices.Blue.cardId) then
-    speedBlue = speedBlue + modifier
-  end
-
-  if isAttack(choices.Red.cardId) then
-    speedRed = speedRed + modifier
-  end
-
-  if speedBlue > speedRed then
-    printToAll(getColoredName("Red") .. "'s card gets resolved first.")
-    resolveCard(choices.Red)
-    coWait(1.5)
-    resolveCard(choices.Blue)
-  else
-    printToAll(getColoredName("Blue") .. "'s card gets resolved first.")
-    resolveCard(choices.Blue)
-    coWait(1.5)
-    resolveCard(choices.Red)
-  end
-
-  -- reset "choices" table
-  choices = {}
-  return 1
 end
 
 function coWait(t)
@@ -522,7 +536,8 @@ function resolveCard(params)
   end
 
   if type > 0 then
-    printToAll(getColoredName(playerColor) .. " played an attack card.")
+    printToAll(getColoredName(playerColor) .. " played an attack card (Row/Col: " ..
+      choiceGrid.row .. "/" .. choiceGrid.col .. ").")
 
     -- maybe deal damage to enemy
     local hitSomething = false
@@ -536,7 +551,7 @@ function resolveCard(params)
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
-        _G["GamePanel"].call("dealDamageToColor", { color = enemyColor, damage = type })
+        dealDamageToColor({ color = enemyColor, damage = type })
         takeControlOfRelic(playerColor, false)
         hitSomething = true
         break
@@ -545,13 +560,14 @@ function resolveCard(params)
 
     -- attack missed
     if not hitSomething then
-      broadcastToAll(getColoredName(playerColor) .. "'s attack missed (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
+      broadcastToAll(getColoredName(playerColor) .. "'s attack missed.", "White")
     end
   else
     printToAll(getColoredName(playerColor) .. " played a movement card.")
     -- move action
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
-      broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
+      broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " ..
+        choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
     else
       _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(choiceGrid))
       coWait(1)
@@ -592,9 +608,19 @@ function newGame()
 
   broadcastToAll("New Game!", "Green")
 
+  local speedList = {}
   for _, color in ipairs({ "Blue", "Red" }) do
+    -- get new speed until new value found
+    local newSpeed
+    repeat
+      newSpeed = math.random(1, 100)
+    until speedList[newSpeed] ~= true
+
+    -- store speed
+    speedList[newSpeed] = true
+
     -- get new speed value for deckmats
-    _G["Deckmat" .. color].call("setNewSpeed", math.random(1, 100))
+    _G["Deckmat" .. color].call("setNewSpeed", newSpeed)
   end
 
   -- set round to 0
@@ -822,4 +848,3 @@ function getColoredName(playerColor)
   -- add bb-code
   return "[" .. Color.fromString(playerColor):toHex() .. "]" .. displayName .. "[-]"
 end
-
