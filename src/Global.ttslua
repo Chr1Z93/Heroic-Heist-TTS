@@ -140,7 +140,7 @@ function convertGridToPos(grid)
   local pos = { x = (grid.col - 3) * 0.3, z = (grid.row - 3) * 0.3 }
   for _, snap in ipairs(_G["PlayArea"].getSnapPoints()) do
     if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
-      return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z))
+      return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z)):setAt("y", 2.8)
     end
   end
 end
@@ -452,9 +452,9 @@ function resolveBothCards()
   local resolveOrder = getResolveOrder()
 
   printToAll(getColoredName(resolveOrder[1]) .. "'s card gets resolved first.")
-  resolveCard(resolveOrder[1])
+  resolveCard(choices[resolveOrder[1]])
   coWait(1.5)
-  resolveCard(resolveOrder[2])
+  resolveCard(choices[resolveOrder[2]])
 
   -- reset "choices" table
   choices = {}
@@ -641,12 +641,12 @@ function nextRound()
   local firstPlayer = "Blue"
   if round % 2 == 0 then
     -- even round: slower speed goes first
-    if speedBlue < speedRed then
+    if speedBlue > speedRed then
       firstPlayer = "Red"
     end
   else
     -- odd round: faster speed goes first
-    if speedBlue >= speedRed then
+    if speedBlue < speedRed then
       firstPlayer = "Red"
     end
   end
