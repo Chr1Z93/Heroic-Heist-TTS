@@ -550,7 +550,7 @@ function resolveCard(params)
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
-        dealDamageToColor({ color = enemyColor, damage = damage })
+        dealDamageToColor(enemyColor, damage)
         takeControlOfRelic(playerColor, false)
         hitSomething = true
         break
@@ -811,14 +811,13 @@ function syncPrivateBoards()
   end
 end
 
-function dealDamageToColor(params)
-  local color = string.upper(params.color)
-  local newHP = _G["HealthTracker" .. color].call("addOrSubtract", -1 * params.damage)
-  broadcastToAll(params.color .. " lost " .. params.damage .. " health.", "White")
+function dealDamageToColor(color, damage)
+  local newHP = _G["HealthTracker" .. color].call("addOrSubtract", -1 * damage)
+  broadcastToAll(color .. " lost " .. damage .. " health.", "White")
 
   if newHP == 0 then
-    broadcastToAll(params.color .. " has been defeated.", "White")
-    roundWin(oppositeColor(params.color))
+    broadcastToAll(color .. " has been defeated.", "White")
+    roundWin(oppositeColor(color))
   end
 end
 
