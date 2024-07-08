@@ -65,6 +65,8 @@
     "DeckmatRed.42d92c",
     "HiddenZoneBlue.9ed505",
     "HiddenZoneRed.06ee50",
+    "BasicTurnOrder.ced220",
+    "BasicTurnOrder.719f4c",
     "FlexTableControl.bd69bd",
     "Custom_Assetbundle.afc863",
     "Custom_Assetbundle.c8edca",
@@ -75,7 +77,8 @@
     "Custom_Assetbundle.35b95f",
     "Custom_Assetbundle.5af8f2",
     "Custom_Model.4ee1f2",
-    "NoteregardingHiddenZones.b6c018"
+    "NoteregardingHiddenZones.b6c018",
+    "Logo.f940da"
   ],
   "PlayArea": 0.5,
   "SaveName": "Heroic Heist",

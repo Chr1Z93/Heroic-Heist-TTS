@@ -783,28 +783,30 @@ end
 function syncPrivateBoards()
   for _, color in ipairs({ "Blue", "Red" }) do
     for _, tokenName in ipairs({ "Relic", "PlayerTokenBlue", "PlayerTokenRed" }) do
-      -- make sure a copy of the token exists
-      if not _G[tokenName .. "Copy" .. color] then
-        _G[tokenName .. "Copy" .. color] = _G[tokenName].clone()
-        GUID_LIST[tokenName .. "Copy" .. color] = _G[tokenName .. "Copy" .. color].getGUID()
+      if _G[tokenName] then
+        -- make sure a copy of the token exists
+        if not _G[tokenName .. "Copy" .. color] then
+          _G[tokenName .. "Copy" .. color] = _G[tokenName].clone()
+          GUID_LIST[tokenName .. "Copy" .. color] = _G[tokenName .. "Copy" .. color].getGUID()
 
-        -- lock copy
-        _G[tokenName .. "Copy" .. color].setLock(true)
-        _G[tokenName .. "Copy" .. color].interactable = false
+          -- lock copy
+          _G[tokenName .. "Copy" .. color].setLock(true)
+          _G[tokenName .. "Copy" .. color].interactable = false
 
-        -- half the scale
-        local scale = _G[tokenName].getScale() * Vector(0.5, 1, 0.5)
-        _G[tokenName .. "Copy" .. color].setScale(scale)
+          -- half the scale
+          local scale = _G[tokenName].getScale() * Vector(0.5, 1, 0.5)
+          _G[tokenName .. "Copy" .. color].setScale(scale)
+        end
+
+        -- get position for token
+        local publicPos = _G[tokenName].getPosition()
+        local localPos = _G["PlayArea"].positionToLocal(publicPos)
+        local copyPos = _G["PlayArea" .. color].positionToWorld(localPos):setAt("y", 2.8)
+
+        -- move copies
+        _G[tokenName .. "Copy" .. color].setPosition(copyPos)
+        _G[tokenName .. "Copy" .. color].setRotation(_G[tokenName].getRotation())
       end
-
-      -- get position for token
-      local publicPos = _G[tokenName].getPosition()
-      local localPos = _G["PlayArea"].positionToLocal(publicPos)
-      local copyPos = _G["PlayArea" .. color].positionToWorld(localPos):setAt("y", 2.8)
-
-      -- move copies
-      _G[tokenName .. "Copy" .. color].setPosition(copyPos)
-      _G[tokenName .. "Copy" .. color].setRotation(_G[tokenName].getRotation())
     end
   end
 end
