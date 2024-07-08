@@ -17,8 +17,8 @@
   },
   "AmbientType": 0,
   "LightColor": {
-    "b": 0.8902,
-    "g": 0.9804,
+    "b": 0.89,
+    "g": 0.98,
     "r": 1
   },
   "LightIntensity": 0.54,

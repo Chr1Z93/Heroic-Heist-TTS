@@ -1,12 +1,12 @@
 require("CardMetadata")
 local searchLib = require("libraries/SearchLib")
 
-GridStart = {
+STARTING_GRID = {
   Blue = { row = 1, col = 3 },
   Red  = { row = 5, col = 3 }
 }
 
-direction = { Blue = -1, Red = 1 }
+DIRECTION_RIGHT = { Blue = -1, Red = 1 }
 
 NOT_INTERACTABLE = {
   "PlayArea",
@@ -79,7 +79,6 @@ end
 
 -- create buttons on the game panel
 function buttonCreationGP()
-  -- shared parameters
   local buttonParameters = {
     function_owner = Global,
     position = { x = 0, y = 0.2, z = 0 },
@@ -182,7 +181,7 @@ function getTargetsForCardId(params)
   local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
 
   -- get target locations
-  local mult = -1 * direction[playerColor]
+  local mult = -1 * DIRECTION_RIGHT[playerColor]
   local targetGridList = {}
 
   -- add single spots for areas (these are connected)
@@ -332,7 +331,7 @@ function getConnectedTargets(cardId, playerColor, startGrid)
   local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
 
   -- get target locations
-  local mult = -1 * direction[playerColor]
+  local mult = -1 * DIRECTION_RIGHT[playerColor]
 
   -- go through targetAreas
   for _, data in ipairs(md.targetAreas or {}) do
@@ -462,11 +461,11 @@ function resolveBothCards()
 end
 
 function getResolveOrder()
-  -- define returnTables
   local resolveOrder = {
     Blue = { "Blue", "Red" },
     Red = { "Red", "Blue" }
   }
+
   -- get speed of players
   local speedBlue = _G["DeckmatBlue"].call("getSpeed")
   local speedRed = _G["DeckmatRed"].call("getSpeed")
@@ -520,7 +519,7 @@ function resolveCard(params)
 
   -- get metadata
   local md = METADATA[params.cardId]
-  local type = md.damage or 0
+  local damage = md.damage or 0
 
   -- get current position
   local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
@@ -535,7 +534,7 @@ function resolveCard(params)
     return
   end
 
-  if type > 0 then
+  if damage > 0 then
     printToAll(getColoredName(playerColor) .. " played an attack card (Row/Col: " ..
       choiceGrid.row .. "/" .. choiceGrid.col .. ").")
 
@@ -551,7 +550,7 @@ function resolveCard(params)
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
       if eGrid.row == target.row and eGrid.col == target.col then
-        dealDamageToColor({ color = enemyColor, damage = type })
+        dealDamageToColor({ color = enemyColor, damage = damage })
         takeControlOfRelic(playerColor, false)
         hitSomething = true
         break
@@ -563,8 +562,9 @@ function resolveCard(params)
       broadcastToAll(getColoredName(playerColor) .. "'s attack missed.", "White")
     end
   else
-    printToAll(getColoredName(playerColor) .. " played a movement card.")
     -- move action
+    printToAll(getColoredName(playerColor) .. " played a movement card.")
+
     if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
       broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " ..
         choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
@@ -581,7 +581,6 @@ function resolveCard(params)
 
       -- get next location for direction move
       if md.directionMove then
-        -- get target location
         local newTarget = { row = 2 * choiceGrid.row - grid.row, col = 2 * choiceGrid.col - grid.col }
 
         -- if valid, repeat movement
@@ -598,7 +597,6 @@ function resolveCard(params)
   _G["Playermat" .. playerColor].call("discardActiveCard")
 end
 
--- Game Panel functions
 function newGame()
   for _, obj in ipairs(getObjects()) do
     if obj.locked == false then
@@ -623,10 +621,9 @@ function newGame()
     _G["Deckmat" .. color].call("setNewSpeed", newSpeed)
   end
 
-  -- set round to 0
+
   _G["RoundTracker"].call("updateVal", 0)
 
-  -- newRound
   nextRound()
 end
 
@@ -705,7 +702,7 @@ function nextRound()
 
     -- spawn player tokens
     _G["PlayerToken" .. color] = _G["SourcePlayerToken" .. color].takeObject({
-      position = convertGridToPos(GridStart[color]),
+      position = convertGridToPos(STARTING_GRID[color]),
       rotation = mat.getRotation(),
       smooth = false
     })
@@ -716,8 +713,8 @@ function nextRound()
 
     if round == 1 then
       -- give players copies of cards to assemble their deck
-      local pos1 = Vector(direction[color] * 2.5, 0.2, 0)
-      local pos2 = Vector(direction[color] * 3.5, 0.2, 0)
+      local pos1 = Vector(DIRECTION_RIGHT[color] * 2.5, 0.2, 0)
+      local pos2 = Vector(DIRECTION_RIGHT[color] * 3.5, 0.2, 0)
       local rot = mat.getRotation()
       _G["SourceMovementDeck"].takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
       _G["SourceAttackDeck"].takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
@@ -736,9 +733,7 @@ function nextTurn()
 
   -- determine winner after 8 turns
   if turn == 9 then
-    -- get current owner of relic
     local currentOwner
-
     local currentGrid = convertPosToGrid(_G["Relic"].getPosition())
     if currentGrid.row == 0 then
       currentOwner = "Blue"
