@@ -538,9 +538,7 @@ function resolveCard(params)
   end
 
   -- remove all crosses
-  for _, obj in ipairs(getObjectsWithTag("Cross" .. playerColor)) do
-    obj.destruct()
-  end
+  removeCrosses(playerColor)
 
   if damage > 0 then
     printToAll(getColoredName(playerColor) .. " played an attack card (Row/Col: " ..
@@ -621,6 +619,12 @@ function spawnCross(playerColor, grid)
   cross.setRotation(Vector(0, 45, 0))
   cross.interactable = false
   cross.setLock(true)
+end
+
+function removeCrosses(playerColor)
+  for _, obj in ipairs(getObjectsWithTag("Cross" .. playerColor)) do
+    obj.destruct()
+  end
 end
 
 function newGame()
@@ -716,6 +720,8 @@ function nextRound()
   GUID_LIST["Relic"] = _G["Relic"].getGUID()
 
   for _, color in ipairs({ "Blue", "Red" }) do
+    removeCrosses(color)
+
     local mat = _G["Playermat" .. color]
 
     -- reset playerboards
