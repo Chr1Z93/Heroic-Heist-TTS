@@ -6,26 +6,26 @@
   },
   "Autoraise": true,
   "ColorDiffuse": {
-    "b": 0,
-    "g": 0,
-    "r": 0
+    "b": 1,
+    "g": 1,
+    "r": 1
   },
   "CustomImage": {
-    "CustomTile": {
+    "CustomToken": {
+      "MergeDistancePixels": 5,
       "Stackable": false,
-      "Stretch": true,
-      "Thickness": 0.2,
-      "Type": 0
+      "StandUp": false,
+      "Thickness": 0.2
     },
     "ImageScalar": 1,
     "ImageSecondaryURL": "",
-    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/HowToPlay.png?raw=true",
+    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/cross_blue.png?raw=true",
     "WidthScale": 0
   },
   "Description": "",
-  "DragSelectable": true,
+  "DragSelectable": false,
   "GMNotes": "",
-  "GUID": "719f4c",
+  "GUID": "4a2bf9",
   "Grid": true,
   "GridProjection": false,
   "Hands": false,
@@ -36,21 +36,24 @@
   "LuaScript": "",
   "LuaScriptState": "",
   "MeasureMovement": false,
-  "Name": "Custom_Tile",
-  "Nickname": "Basic Turn Order",
+  "Name": "Custom_Token",
+  "Nickname": "CrossBlue",
   "Snap": true,
   "Sticky": true,
-  "Tooltip": true,
+  "Tags": [
+    "CrossBlue"
+  ],
+  "Tooltip": false,
   "Transform": {
-    "posX": -21,
-    "posY": 2.5,
-    "posZ": 31.75,
+    "posX": 22.35,
+    "posY": 4.673,
+    "posZ": -7.956,
     "rotX": 0,
-    "rotY": 0,
+    "rotY": 135,
     "rotZ": 0,
-    "scaleX": 4,
+    "scaleX": 0.5,
     "scaleY": 1,
-    "scaleZ": 4
+    "scaleZ": 0.5
   },
   "Value": 0,
   "XmlUI": ""

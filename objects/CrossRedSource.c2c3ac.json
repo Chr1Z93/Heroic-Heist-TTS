@@ -6,26 +6,18 @@
   },
   "Autoraise": true,
   "ColorDiffuse": {
-    "b": 0,
-    "g": 0,
-    "r": 0
+    "b": 1,
+    "g": 0.37256,
+    "r": 0.30589
   },
-  "CustomImage": {
-    "CustomTile": {
-      "Stackable": false,
-      "Stretch": true,
-      "Thickness": 0.2,
-      "Type": 0
-    },
-    "ImageScalar": 1,
-    "ImageSecondaryURL": "",
-    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/HowToPlay.png?raw=true",
-    "WidthScale": 0
-  },
+  "ContainedObjects_order": [
+    "CrossRed.fb7516"
+  ],
+  "ContainedObjects_path": "CrossRedSource.c2c3ac",
   "Description": "",
   "DragSelectable": true,
   "GMNotes": "",
-  "GUID": "719f4c",
+  "GUID": "c2c3ac",
   "Grid": true,
   "GridProjection": false,
   "Hands": false,
@@ -35,22 +27,24 @@
   "Locked": true,
   "LuaScript": "",
   "LuaScriptState": "",
+  "MaterialIndex": -1,
   "MeasureMovement": false,
-  "Name": "Custom_Tile",
-  "Nickname": "Basic Turn Order",
+  "MeshIndex": -1,
+  "Name": "Infinite_Bag",
+  "Nickname": "CrossRed Source",
   "Snap": true,
   "Sticky": true,
   "Tooltip": true,
   "Transform": {
-    "posX": -21,
-    "posY": 2.5,
-    "posZ": 31.75,
+    "posX": 47,
+    "posY": -1,
+    "posZ": -12,
     "rotX": 0,
-    "rotY": 0,
+    "rotY": 90,
     "rotZ": 0,
-    "scaleX": 4,
+    "scaleX": 1,
     "scaleY": 1,
-    "scaleZ": 4
+    "scaleZ": 1
   },
   "Value": 0,
   "XmlUI": ""

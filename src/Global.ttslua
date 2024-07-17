@@ -40,6 +40,8 @@ GUID_LIST = {
   SourceAttackDeck      = "893ba7",
   SourceMovementDeck    = "f8b297",
   SourceExplosion       = "b2b73f",
+  SourceCrossBlue       = "cf0efd",
+  SourceCrossRed        = "c2c3ac",
   TurnTracker           = "6707f1",
 }
 
@@ -142,6 +144,7 @@ function convertGridToPos(grid)
       return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z)):setAt("y", 2.8)
     end
   end
+  return nil
 end
 
 function takeControlOfRelic(newOwner, move)
@@ -534,6 +537,11 @@ function resolveCard(params)
     return
   end
 
+  -- remove all crosses
+  for _, obj in ipairs(getObjectsWithTag("Cross" .. playerColor)) do
+    obj.destruct()
+  end
+
   if damage > 0 then
     printToAll(getColoredName(playerColor) .. " played an attack card (Row/Col: " ..
       choiceGrid.row .. "/" .. choiceGrid.col .. ").")
@@ -542,18 +550,22 @@ function resolveCard(params)
     local hitSomething = false
 
     -- display explosion
-    local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid) })
-    explosion.AssetBundle.playLoopingEffect(2)
-    Wait.time(function() explosion.destruct() end, 2)
+    -- local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid) })
+    -- explosion.AssetBundle.playLoopingEffect(2)
+    -- Wait.time(function() explosion.destruct() end, 2)
+
+    -- spawn cross in correct color
+    log(1)
+    spawnCross(playerColor, choiceGrid)
 
     -- check connected spaces
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
+      spawnCross(playerColor, target)
       if eGrid.row == target.row and eGrid.col == target.col then
         dealDamageToColor(enemyColor, damage)
         takeControlOfRelic(playerColor, false)
         hitSomething = true
-        break
       end
     end
 
@@ -595,6 +607,20 @@ function resolveCard(params)
 
   -- discard active card
   _G["Playermat" .. playerColor].call("discardActiveCard")
+end
+
+function spawnCross(playerColor, grid)
+  if grid == nil then return end
+  local mod = (playerColor == "Red") and 1 or -1
+  local gridPos = convertGridToPos(grid)
+  if gridPos == nil then return end
+
+  local pos = gridPos + Vector(0, -0.18, mod * 1.5)
+  local cross = _G["SourceCross" .. playerColor].takeObject()
+  cross.setPosition(pos)
+  cross.setRotation(Vector(0, 45, 0))
+  cross.interactable = false
+  cross.setLock(true)
 end
 
 function newGame()
