@@ -743,7 +743,7 @@ METADATA = {
     }
   },
   ["48"] = {
-    damage = 75,
+    damage = 50,
     targetConnectionGroups = {
       {
         {
@@ -786,7 +786,7 @@ METADATA = {
     }
   },
   ["49"] = {
-    damage = 75,
+    damage = 50,
     targetConnectionGroups = {
       {
         {
@@ -829,7 +829,7 @@ METADATA = {
     }
   },
   ["50"] = {
-    damage = 75,
+    damage = 50,
     targetConnectionGroups = {
       {
         {
@@ -1061,7 +1061,7 @@ METADATA = {
     }
   },
   ["59"] = {
-    damage = 75,
+    damage = 50,
     targetConnectionGroups = {
       {
         {

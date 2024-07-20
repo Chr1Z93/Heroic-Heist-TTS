@@ -39,7 +39,6 @@ GUID_LIST = {
   SourceRelic           = "1e886d",
   SourceAttackDeck      = "893ba7",
   SourceMovementDeck    = "f8b297",
-  SourceExplosion       = "b2b73f",
   SourceCrossBlue       = "cf0efd",
   SourceCrossRed        = "c2c3ac",
   TurnTracker           = "6707f1",
@@ -61,9 +60,6 @@ function onLoad(savedData)
   getReferences()
   setNotInteractable()
   buttonCreationGP()
-
-  -- store explosion data
-  explosionData = _G["SourceExplosion"].getData().ContainedObjects[1]
 end
 
 -- grab object references
@@ -547,13 +543,7 @@ function resolveCard(params)
     -- maybe deal damage to enemy
     local hitSomething = false
 
-    -- display explosion
-    -- local explosion = spawnObjectData({ data = explosionData, position = convertGridToPos(choiceGrid) })
-    -- explosion.AssetBundle.playLoopingEffect(2)
-    -- Wait.time(function() explosion.destruct() end, 2)
-
     -- spawn cross in correct color
-    log(1)
     spawnCross(playerColor, choiceGrid)
 
     -- check connected spaces
@@ -764,7 +754,7 @@ function nextTurn()
   local turn = _G["TurnTracker"].call("addOrSubtract", 1)
 
   -- determine winner after 8 turns
-  if turn == 9 then
+  if turn >= 8 then
     local currentOwner
     local currentGrid = convertPosToGrid(_G["Relic"].getPosition())
     if currentGrid.row == 0 then
@@ -783,11 +773,9 @@ function nextTurn()
       local hpRed = _G["HealthTrackerRed"].getVar("val")
 
       if hpBlue > hpRed then
-        broadcastToAll("Blue has more health the end of turn 8.", "White")
-        roundWin("Blue")
+        winByHealth("Blue")
       elseif hpRed > hpBlue then
-        broadcastToAll("Red has more health the end of turn 8.", "White")
-        roundWin("Red")
+        winByHealth("Red")
       else
         broadcastToAll("Players are tied at the end of turn 8 and the round ends in a draw.", "White")
       end
@@ -802,6 +790,11 @@ function nextTurn()
     _G["PlayermatBlue"].call("togglePlayButton")
     _G["PlayermatRed"].call("togglePlayButton")
   end
+end
+
+function winByHealth(color)
+  broadcastToAll(getColoredName(color) .. " has more health the end of turn 8.", "White")
+  roundWin(color)
 end
 
 -- re-sync boards if a tile is moved
@@ -845,22 +838,22 @@ end
 
 function dealDamageToColor(color, damage)
   local newHP = _G["HealthTracker" .. color].call("addOrSubtract", -1 * damage)
-  broadcastToAll(color .. " lost " .. damage .. " health.", "White")
+  broadcastToAll(getColoredName(color) .. " lost " .. damage .. " health.", "White")
 
   if newHP == 0 then
-    broadcastToAll(color .. " has been defeated.", "White")
+    broadcastToAll(getColoredName(color) .. " has been defeated.", "White")
     roundWin(oppositeColor(color))
   end
 end
 
 function roundWin(color)
   local round = _G["RoundTracker"].getVar("val")
-  local score = _G["ScoreTracker" .. string.upper(color)].call("addOrSubtract", 1)
+  local score = _G["ScoreTracker" .. color].call("addOrSubtract", 1)
 
   if score == 2 then
-    broadcastToAll(color .. " wins round " .. round .. " and the game!", "White")
+    broadcastToAll(getColoredName(color) .. " wins round " .. round .. " and the game!", "White")
   else
-    broadcastToAll(color .. " wins round " .. round .. ".", "White")
+    broadcastToAll(getColoredName(color) .. " wins round " .. round .. ".", "White")
   end
 
   -- advance to next round

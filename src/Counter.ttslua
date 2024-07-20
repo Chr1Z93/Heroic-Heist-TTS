@@ -27,6 +27,12 @@ function onLoad(savedData)
     font_size = fontSize,
     font_color = fontColor
   })
+  self.addContextMenuItem("Edit Value", function(playerColor)
+    Player[playerColor].showInputDialog("Enter new value:", tostring(val), function(text)
+      broadcastToAll(getColoredName(playerColor) .. " edited '" .. self.getName() .. "' from '" .. val .. "' to '" .. text .. "'.")
+      updateVal(text)
+    end)
+  end)
 end
 
 function updateVal(newVal)
@@ -43,3 +49,13 @@ function addOrSubtract(amount)
 end
 
 function none() end
+
+function getColoredName(playerColor)
+  local displayName = playerColor
+  if Player[playerColor].steam_name then
+    displayName = Player[playerColor].steam_name
+  end
+
+  -- add bb-code
+  return "[" .. Color.fromString(playerColor):toHex() .. "]" .. displayName .. "[-]"
+end
