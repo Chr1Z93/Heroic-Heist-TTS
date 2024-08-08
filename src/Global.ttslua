@@ -603,6 +603,9 @@ function spawnCross(playerColor, grid)
   local gridPos = convertGridToPos(grid)
   if gridPos == nil then return end
 
+  -- only spawn crosses in the main area
+  if gridPos.row == 0 or gridPos.col == 0 or gridPos.row == 6 or gridPos.col == 6 then return end
+
   local pos = gridPos + Vector(0, -0.18, mod * 1.5)
   local cross = _G["SourceCross" .. playerColor].takeObject()
   cross.setPosition(pos)
