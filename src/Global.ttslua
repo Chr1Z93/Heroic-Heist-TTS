@@ -215,7 +215,7 @@ function getTargetsForCardId(params)
           newTarget.rot2 = newTarget.rot + 90
         end
 
-        if validateTarget(newTarget, false, playerColor) then
+        if validateTarget(newTarget, true, playerColor) then
           table.insert(targetGridList, newTarget)
         end
       end
@@ -228,7 +228,7 @@ function getTargetsForCardId(params)
       row = grid.row + data[2] * mult,
       col = grid.col + data[1] * mult
     }
-    if validateTarget(newTarget, false, playerColor) then
+    if validateTarget(newTarget, true, playerColor) then
       table.insert(targetGridList, newTarget)
     end
   end
@@ -243,7 +243,7 @@ function getTargetsForCardId(params)
         rot = data.rot,
         rot2 = data.rot2
       }
-      if validateTarget(newTarget, false, playerColor) then
+      if validateTarget(newTarget, true, playerColor) then
         table.insert(targetGridList, newTarget)
       end
     end
@@ -265,7 +265,7 @@ function getTargetsForCardId(params)
       row = grid.row + data[2] * mult,
       col = grid.col + data[1] * mult
     }
-    if validateTarget(newTarget, true, playerColor, true) then
+    if validateTarget(newTarget, true, playerColor) then
       table.insert(targetGridList, newTarget)
     end
   end
@@ -293,32 +293,24 @@ function getTargetsForCardId(params)
   return targetGridList
 end
 
-function validateTarget(targetGrid, isMove, playerColor, noBlock)
+function validateTarget(targetGrid, noBlock, playerColor)
   if targetGrid.row > 0 and targetGrid.row < 6 and targetGrid.col > 0 and targetGrid.col < 6 then
-    if not isMove then
-      return true
+    -- skip blocking for attacks and large arrow movement
+    if noBlock then return true end
+
+    -- get enemy position and check if he blocks
+    local enemyColor = oppositeColor(playerColor)
+    local grid = convertPosToGrid(_G["PlayerToken" .. enemyColor].getPosition())
+    if not grid then return false end
+
+    if targetGrid.row == grid.row and targetGrid.col == grid.col then
+      return false
     else
-      -- skip blocking for large arrow movement
-      if noBlock then
-        return true
-      end
-
-      -- get enemy position and check if he blocks
-      local enemyColor = oppositeColor(playerColor)
-      local grid = convertPosToGrid(_G["PlayerToken" .. enemyColor].getPosition())
-      if not grid then
-        return false
-      end
-
-      if targetGrid.row == grid.row and targetGrid.col == grid.col then
-        return false
-      else
-        return true
-      end
+      return true
     end
-  else
-    return false
   end
+
+  return false
 end
 
 function getConnectedTargets(cardId, playerColor, startGrid)
@@ -584,7 +576,7 @@ function resolveCard(params)
         local newTarget = { row = 2 * choiceGrid.row - grid.row, col = 2 * choiceGrid.col - grid.col }
 
         -- if valid, repeat movement
-        if validateTarget(newTarget, true, playerColor) then
+        if validateTarget(newTarget, false, playerColor) then
           params.choiceGrid = newTarget
           coWait(1)
           resolveCard(params)
@@ -599,13 +591,14 @@ end
 
 function spawnCross(playerColor, grid)
   if grid == nil then return end
-  local mod = (playerColor == "Red") and 1 or -1
+
+  -- only spawn crosses in the main area
+  if grid.row < 1 or grid.col < 1 or grid.row > 5 or grid.col > 5 then return end
+
   local gridPos = convertGridToPos(grid)
   if gridPos == nil then return end
 
-  -- only spawn crosses in the main area
-  if gridPos.row == 0 or gridPos.col == 0 or gridPos.row == 6 or gridPos.col == 6 then return end
-
+  local mod = (playerColor == "Red") and 1 or -1
   local pos = gridPos + Vector(0, -0.18, mod * 1.5)
   local cross = _G["SourceCross" .. playerColor].takeObject()
   cross.setPosition(pos)
@@ -671,9 +664,7 @@ function nextRound()
     end
   end
 
-  broadcastToAll("---------", "Orange")
-  broadcastToAll("Round " .. round, "Orange")
-  broadcastToAll("---------", "Orange")
+  broadcastToAll("--- Round " .. round .. " ---", "Orange")
   broadcastToAll(getColoredName(firstPlayer) .. " goes first this round.")
 
   -- temporarily lock all cards and decks to exclude them from clean up
@@ -757,7 +748,7 @@ function nextTurn()
   local turn = _G["TurnTracker"].call("addOrSubtract", 1)
 
   -- determine winner after 8 turns
-  if turn >= 8 then
+  if turn == 9 then
     local currentOwner
     local currentGrid = convertPosToGrid(_G["Relic"].getPosition())
     if currentGrid.row == 0 then
@@ -768,7 +759,7 @@ function nextTurn()
 
     if currentOwner then
       -- someone owns the relic
-      broadcastToAll(currentOwner .. " controls the relic at the end of turn 8.", "White")
+      broadcastToAll(getColoredName(currentOwner) .. " controls the relic at the end of turn 8.", "White")
       roundWin(currentOwner)
     else
       -- no relic control, higher HP wins
