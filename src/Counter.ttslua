@@ -1,5 +1,4 @@
-MIN_VALUE = 0
-MAX_VALUE = 100
+local MIN_VALUE, MAX_VALUE = 0, 100
 val = 0
 
 function onSave() return JSON.encode(val) end
@@ -11,10 +10,10 @@ function onLoad(savedData)
 
   -- smaller fontSize for health trackers
   local fontColor = { 1, 1, 1 }
-  local fontSize = 400
+  local fontSize = 800
   local name = self.getName()
   if name == "HealthTrackerBlue" or name == "HealthTrackerRed" then
-    fontSize = 250
+    fontSize = 500
   end
 
   self.createButton({
@@ -22,6 +21,7 @@ function onLoad(savedData)
     click_function = "none",
     function_owner = self,
     position = { 0, 0.5, 0.05 },
+    scale = { 0.5, 0.5, 0.5 },
     height = 0,
     width = 0,
     font_size = fontSize,
