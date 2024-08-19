@@ -40,7 +40,7 @@
   "Nickname": "PlayerRed",
   "Snap": true,
   "Sticky": true,
-  "Tooltip": true,
+  "Tooltip": false,
   "Transform": {
     "posX": 40.064,
     "posY": 4.685,

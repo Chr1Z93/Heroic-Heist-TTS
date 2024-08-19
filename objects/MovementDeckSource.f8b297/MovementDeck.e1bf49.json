@@ -35,7 +35,7 @@
   "CustomDeck": {
     "1": {
       "BackIsHidden": true,
-      "BackURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/Back.png?raw=true",
+      "BackURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/Back_logo.png?raw=true",
       "FaceURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/decksheet.png?raw=true",
       "NumHeight": 7,
       "NumWidth": 10,

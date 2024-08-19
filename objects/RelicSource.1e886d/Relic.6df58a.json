@@ -40,7 +40,7 @@
   "Nickname": "Relic",
   "Snap": true,
   "Sticky": true,
-  "Tooltip": true,
+  "Tooltip": false,
   "Transform": {
     "posX": 46.165,
     "posY": 4.689,
