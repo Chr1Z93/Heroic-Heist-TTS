@@ -40,7 +40,7 @@
   "Nickname": "Note regarding Hidden Zones",
   "Snap": true,
   "Sticky": true,
-  "Tooltip": true,
+  "Tooltip": false,
   "Transform": {
     "posX": 37.5,
     "posY": 2.501,
