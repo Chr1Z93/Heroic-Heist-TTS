@@ -553,39 +553,93 @@ function resolveCard(params)
       broadcastToAll(getColoredName(playerColor) .. "'s attack missed.", "White")
     end
   else
-    -- move action
     printToAll(getColoredName(playerColor) .. " played a movement card.")
 
-    if eGrid.row == choiceGrid.row and eGrid.col == choiceGrid.col then
-      broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " ..
-        choiceGrid.row .. "/" .. choiceGrid.col .. ")", "White")
-    else
-      _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(choiceGrid))
-      coWait(1)
-      syncPrivateBoards()
-
-      -- maybe take control of relic
-      local relicGrid = convertPosToGrid(_G["Relic"].getPosition())
-      if (choiceGrid.row == relicGrid.row and choiceGrid.col == relicGrid.col) then
-        takeControlOfRelic(playerColor, true)
-      end
-
-      -- get next location for direction move
-      if md.directionMove then
-        local newTarget = { row = 2 * choiceGrid.row - grid.row, col = 2 * choiceGrid.col - grid.col }
-
-        -- if valid, repeat movement
-        if validateTarget(newTarget, false, playerColor) then
-          params.choiceGrid = newTarget
-          coWait(1)
-          resolveCard(params)
-        end
-      end
-    end
+    local startGrid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
+    resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, 1)
   end
 
   -- discard active card
   _G["Playermat" .. playerColor].call("discardActiveCard")
+end
+
+function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
+  -- use player selection as next movement as default
+  local nextGrid = { row = choiceGrid.row, col = choiceGrid.col }
+
+  -- get next movement for continous movements
+  if md.choice1 or md.directionMove then
+    nextGrid = getMoveSpot(md, playerColor, startGrid, choiceGrid, step)
+  end
+
+  -- check for movement block
+  if eGrid.row == nextGrid.row and eGrid.col == nextGrid.col then
+    broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")", "White")
+    return
+  end
+
+  -- perform the actual movement
+  local currentGrid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
+  if currentGrid.row == nextGrid.row and currentGrid.col == nextGrid.col then return end
+
+  _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(nextGrid))
+
+  -- maybe take control of relic
+  local relicGrid = convertPosToGrid(_G["Relic"].getPosition())
+  if (nextGrid.row == relicGrid.row and nextGrid.col == relicGrid.col) then
+    takeControlOfRelic(playerColor, true)
+  end
+
+  coWait(1)
+
+  syncPrivateBoards()
+
+  -- repeat with next step of movement (unless direction move or at destination)
+  if md.directionMove or choiceGrid.row ~= nextGrid.row or choiceGrid.col ~= nextGrid.col then
+    resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step + 1)
+  end
+end
+
+-- returns the grid position for a specific step (e.g. 3 steps is the 3rd square that you step on)
+function getMoveSpot(md, playerColor, startGrid, endGrid, step)
+  step = step or 1
+  local mult = -1 * DIRECTION_RIGHT[playerColor]
+
+  -- handle two-parted movement (only orthogonally)
+  if md.choice1 then
+    local newGrid = {
+      row = startGrid.row + md.choice1[1][2] * mult,
+      col = startGrid.col + md.choice1[1][1] * mult
+    }
+
+    local maxFollowUpSteps = math.max(math.abs(newGrid.row - endGrid.row), math.abs(newGrid.col - endGrid.col))
+
+    -- can't perform more steps, end here
+    if step <= 1 or maxFollowUpSteps == 0 then return newGrid end
+
+    newGrid.row = newGrid.row + (step - 1)/maxFollowUpSteps * (endGrid.row - newGrid.row)
+    newGrid.col = newGrid.col + (step - 1)/maxFollowUpSteps * (endGrid.col - newGrid.col)
+    return newGrid
+  end
+
+  -- handle direction movement
+  if md.directionMove then
+    -- need to figure out which direction to move in
+    local rowDirection = (endGrid.row > startGrid.row) and 1 or -1
+    local colDirection = (endGrid.col > startGrid.col) and 1 or -1
+
+    local newGrid = {
+      row = startGrid.row + rowDirection * step,
+      col = startGrid.col + colDirection * step
+    }
+
+    -- make sure we're not leaving the board
+    if newGrid.row > 5 or newGrid.row < 1 or newGrid.col > 5 or newGrid.col < 1 then
+      return startGrid
+    else
+      return newGrid
+    end
+  end
 end
 
 function spawnCross(playerColor, grid)
