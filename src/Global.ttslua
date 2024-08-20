@@ -614,6 +614,11 @@ function getMoveSpot(md, playerColor, startGrid, endGrid, step)
 
     local maxFollowUpSteps = math.max(math.abs(newGrid.row - endGrid.row), math.abs(newGrid.col - endGrid.col))
 
+    -- add one to step if first part is 0/0
+    if md.choice1[1][2] == 0 and md.choice1[1][2] == 0 then
+      step = step + 1
+    end
+
     -- can't perform more steps, end here
     if step <= 1 or maxFollowUpSteps == 0 then return newGrid end
 
