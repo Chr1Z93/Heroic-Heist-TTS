@@ -602,28 +602,34 @@ end
 
 -- returns the grid position for a specific step (e.g. 3 steps is the 3rd square that you step on)
 function getMoveSpot(md, playerColor, startGrid, endGrid, step)
-  step = step or 1
   local mult = -1 * DIRECTION_RIGHT[playerColor]
 
-  -- handle two-parted movement (only orthogonally)
+  -- handle two-parted movement
   if md.choice1 then
+    -- how many steps are covered by the first part
+    local startSteps = math.max(math.abs(md.choice1[1][1]), math.abs(md.choice1[1][2]))
+
+    -- which percentage of the first part do we need
+    local startStepPartial = step / math.max(startSteps, 1)
+
+    -- new position (after first part)
     local newGrid = {
-      row = startGrid.row + md.choice1[1][2] * mult,
-      col = startGrid.col + md.choice1[1][1] * mult
+      row = startGrid.row + md.choice1[1][2] * mult * startStepPartial,
+      col = startGrid.col + md.choice1[1][1] * mult * startStepPartial
     }
 
+    -- performed enough steps
+    if step <= startSteps then return newGrid end
+
+    -- how many steps can be performed from this point on
     local maxFollowUpSteps = math.max(math.abs(newGrid.row - endGrid.row), math.abs(newGrid.col - endGrid.col))
 
-    -- add one to step if first part is 0/0
-    if md.choice1[1][2] == 0 and md.choice1[1][2] == 0 then
-      step = step + 1
-    end
-
     -- can't perform more steps, end here
-    if step <= 1 or maxFollowUpSteps == 0 then return newGrid end
+    if maxFollowUpSteps == 0 then return newGrid end
 
-    newGrid.row = newGrid.row + (step - 1)/maxFollowUpSteps * (endGrid.row - newGrid.row)
-    newGrid.col = newGrid.col + (step - 1)/maxFollowUpSteps * (endGrid.col - newGrid.col)
+    -- add second part of movement
+    newGrid.row = newGrid.row + (step - startSteps)/maxFollowUpSteps * (endGrid.row - newGrid.row)
+    newGrid.col = newGrid.col + (step - startSteps)/maxFollowUpSteps * (endGrid.col - newGrid.col)
     return newGrid
   end
 
