@@ -164,9 +164,9 @@ function takeControlOfRelic(newOwner, move)
     end
     local reason = move and "a movement card)." or "an attack card)."
     broadcastToAll(getColoredName(newOwner) .. " took control of the relic (because of " .. reason, "White")
+    _G["Relic"].setRotation(newRot)
     _G["Relic"].setPositionSmooth(newPos)
     coWait(1)
-    _G["Relic"].setRotation(newRot)
     syncPrivateBoards()
   end
 end
@@ -270,6 +270,7 @@ function getTargetsForCardId(params)
     end
   end
 
+  -- handle two-parted movements
   for _, data in ipairs(md.choice1 or {}) do
     local newGrid = {
       row = grid.row + data[2] * mult,
@@ -287,6 +288,21 @@ function getTargetsForCardId(params)
           table.insert(targetGridList, newTarget)
         end
       end
+    end
+  end
+
+  -- handle specific movement paths
+  for _, data in ipairs(md.moveSets or {}) do
+    local newTarget = { row = grid.row, col = grid.col }
+
+    -- add moves 1 by 1
+    for _, move in ipairs(data) do
+      newTarget.row = newTarget.row + move[2] * mult
+      newTarget.col = newTarget.col + move[1] * mult
+    end
+
+    if validateTarget(newTarget, true, playerColor) then
+      table.insert(targetGridList, newTarget)
     end
   end
 
@@ -568,7 +584,7 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
   local nextGrid = { row = choiceGrid.row, col = choiceGrid.col }
 
   -- get next movement for continous movements
-  if md.choice1 or md.directionMove then
+  if md.choice1 or md.directionMove or md.moveSets then
     nextGrid = getMoveSpot(md, playerColor, startGrid, choiceGrid, step)
   end
 
@@ -594,7 +610,7 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
 
   syncPrivateBoards()
 
-  -- repeat with next step of movement (unless direction move or at destination)
+  -- repeat with next step of movement (if direction move or not at destination)
   if md.directionMove or choiceGrid.row ~= nextGrid.row or choiceGrid.col ~= nextGrid.col then
     resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step + 1)
   end
@@ -649,6 +665,26 @@ function getMoveSpot(md, playerColor, startGrid, endGrid, step)
       return startGrid
     else
       return newGrid
+    end
+  end
+
+  -- handle specific movement paths
+  if md.moveSets then
+    for _, data in ipairs(md.moveSets) do
+      local newTarget = { row = startGrid.row, col = startGrid.col }
+      local targetList = { }
+
+      -- add moves 1 by 1
+      for _, move in ipairs(data) do
+        newTarget.row = newTarget.row + move[2] * mult
+        newTarget.col = newTarget.col + move[1] * mult
+        table.insert(targetList, { row = newTarget.row, col = newTarget.col })
+
+        -- if this is what was selected, we're on the correct path
+        if newTarget.row == endGrid.row and newTarget.col == endGrid.col then
+          return targetList[step]
+        end
+      end
     end
   end
 end
