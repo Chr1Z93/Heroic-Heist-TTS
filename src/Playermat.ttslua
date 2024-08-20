@@ -12,6 +12,26 @@ end
 function createButtons()
   self.clearButtons()
 
+  -- get direction to global left
+  local pos = self.positionToLocal(Vector(38, 0, 0))
+  local dirX = pos.x / math.abs(pos.x)
+
+  -- claim this seat button
+  self.createButton({
+    function_owner = self,
+    click_function = "claimSeat",
+    label = "Claim\n" .. self.getMemo(),
+    tooltip = "Click to claim this seat",
+    position = { x = dirX * 2.3, y = 0.2, z = -0.65 },
+    height = 2000,
+    width = 2000,
+    color = self.getMemo(),
+    scale = { 0.17, 0.17, 0.17 },
+    font_size = 600,
+    font_color = { 1, 1, 1 }
+  })
+
+  -- buttons below mat
   local buttonParameters = {
     function_owner = self,
     height = 1000,
@@ -34,6 +54,12 @@ function createButtons()
   buttonParameters.position = { x = 1.243, y = 0.2, z = 1.2 }
   buttonParameters.tooltip = "Click to resolve the active card"
   self.createButton(buttonParameters)
+end
+
+function claimSeat(_, playerColor)
+  if not Player[self.getMemo()].seated then
+    Player[playerColor].changeColor(self.getMemo())
+  end
 end
 
 -- starts resolving the active card (user input needed)
@@ -174,8 +200,8 @@ end
 function togglePlayButton()
   local buttonData = self.getButtons()
 
-  if #buttonData == 2 then
-    self.removeButton(1)
+  if #buttonData == 3 then
+    self.removeButton(2)
   else
     createButtons()
   end
