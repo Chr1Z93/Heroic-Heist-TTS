@@ -137,10 +137,18 @@ function convertGridToPos(grid)
   local pos = { x = (grid.col - 3) * 0.3, z = (grid.row - 3) * 0.3 }
   for _, snap in ipairs(_G["PlayArea"].getSnapPoints()) do
     if math.abs(snap.position.x - pos.x) < 0.1 and math.abs(snap.position.z - pos.z) < 0.1 then
-      return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z)):setAt("y", 2.8)
+      return _G["PlayArea"].positionToWorld(Vector(snap.position.x, 0.2, snap.position.z)):setAt("y", 3)
     end
   end
   return nil
+end
+
+function maybeTakeControlOfRelic(playerColor)
+  local grid = convertPosToGrid(_G["PlayerToken" .. playerColor].getPosition())
+  local relicGrid = convertPosToGrid(_G["Relic"].getPosition())
+  if grid.row == relicGrid.row and grid.col == relicGrid.col then
+    takeControlOfRelic(playerColor, true)
+  end
 end
 
 function takeControlOfRelic(newOwner, move)
@@ -579,8 +587,6 @@ function resolveCard(params)
 end
 
 function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
-  coWait(1)
-
   -- use player selection as next movement as default
   local nextGrid = { row = choiceGrid.row, col = choiceGrid.col }
 
@@ -592,6 +598,7 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
   -- check for movement block
   if eGrid.row == nextGrid.row and eGrid.col == nextGrid.col then
     broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")", "White")
+    maybeTakeControlOfRelic(playerColor)
     return
   end
 
@@ -601,10 +608,11 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
 
   _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(nextGrid))
 
+  coWait(0.8)
+
   -- maybe take control of relic
-  local relicGrid = convertPosToGrid(_G["Relic"].getPosition())
-  if (nextGrid.row == relicGrid.row and nextGrid.col == relicGrid.col) then
-    takeControlOfRelic(playerColor, true)
+  if md.directionMove then
+    maybeTakeControlOfRelic(playerColor)
   end
 
   syncPrivateBoards()
@@ -612,6 +620,8 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
   -- repeat with next step of movement (if direction move or not at destination)
   if md.directionMove or choiceGrid.row ~= nextGrid.row or choiceGrid.col ~= nextGrid.col then
     resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step + 1)
+  else
+    maybeTakeControlOfRelic(playerColor)
   end
 end
 
@@ -906,7 +916,7 @@ function syncPrivateBoards()
   if syncId then
     Wait.stop(syncId)
   end
-  syncId = Wait.time(realSync, 0.5)
+  syncId = Wait.time(realSync, 1)
 end
 
 function realSync()
