@@ -5,6 +5,7 @@ local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
 local discardPos = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
 
 function onLoad()
+  math.randomseed(os.time())
   enemyColor = oppositeColor(self.getMemo())
   createButtons()
 end
@@ -23,7 +24,7 @@ function createButtons()
     label = "Claim\n" .. self.getMemo(),
     tooltip = "Click to claim this seat",
     position = { x = dirX * 2.3, y = 0.2, z = -0.65 },
-    height = 2000,
+    height = 1750,
     width = 2000,
     color = self.getMemo(),
     scale = { 0.17, 0.17, 0.17 },
@@ -141,6 +142,41 @@ function allowButtonAccess(playerColor)
   end
 end
 
+function resetDeck()
+  local searchResult = {}
+
+  -- add hand objects
+  for _, card in ipairs(Player[self.getMemo()].getHandObjects()) do
+    table.insert(searchResult, card)
+  end
+
+  -- add deck
+  local deck = getDrawDeck()
+  if deck then
+    table.insert(searchResult, deck)
+  end
+
+  -- add discard
+  local discard = getDiscardPile()
+  if discard then
+    table.insert(searchResult, discard)
+  end
+
+  -- add active card
+  local active = getActiveCard(true)
+  if active then
+    table.insert(searchResult, active)
+  end
+
+  -- place cards as new deck
+  local groupList = group(searchResult)
+  if not groupList[1] then return end
+  groupList[1].setPosition(deckPos)
+  ---@diagnostic disable-next-line: param-type-mismatch
+  groupList[1].setRotation(self.getRotation():setAt("z", 180))
+  Wait.time(function() groupList[1].shuffle() end, 0.2)
+end
+
 -- returns a reference to the draw deck
 function getDrawDeck()
   local searchResult = searchLib.atPosition(deckPos, "isCardOrDeck")
@@ -154,12 +190,15 @@ function getDiscardPile()
 end
 
 -- returns a reference to the active card
-function getActiveCard()
+function getActiveCard(noLog)
   local searchPos = self.positionToWorld(Vector(-1.197, 0.2, 0.343))
   local searchResult = searchLib.atPosition(searchPos, "isCardOrDeck")
 
   if #searchResult == 0 then
-    broadcastToAll("Couldn't find active card for " .. self.getMemo() .. ".", "Orange")
+
+    if not noLog then
+      broadcastToAll("Couldn't find active card for " .. self.getMemo() .. ".", "Orange")
+    end
   elseif #searchResult > 1 or searchResult[1].type == "Deck" then
     broadcastToAll("Detected multiple cards instead of one for " .. self.getMemo() .. ".", "Orange")
   else
@@ -171,9 +210,7 @@ function askToReshuffleDiscard(playerColor)
   if Player[enemyColor].seated then
     Player[enemyColor].showConfirmDialog(
       "The enemy is about to reshuffle their discard pile. Please confirm to proceed.",
-      function()
-        reshuffleDiscard(playerColor)
-      end
+      function() reshuffleDiscard(playerColor) end
     )
   else
     reshuffleDiscard(playerColor)

@@ -854,6 +854,10 @@ function nextRound()
 
   if round == 1 then
     broadcastToAll("Assemble your deck from the provided piles (4 attack and 4 movement cards).", "White")
+  else
+    -- collect cards and form new deck
+    _G["PlayermatBlue"].call("resetDeck")
+    _G["PlayermatRed"].call("resetDeck")
   end
 end
 
