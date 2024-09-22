@@ -81,16 +81,23 @@ function buttonCreationGP()
     function_owner = Global,
     position = { x = 0, y = 0.2, z = 0 },
     height = 1350,
-    width = 6000,
+    width = 8000,
     scale = { 0.1, 0.1, 0.1 },
-    font_size = 1000,
+    font_size = 800,
     font_color = { 0, 0, 0 }
   }
+
+  -- random decks
+  buttonParameters.label = "Spawn Random Decks"
+  buttonParameters.click_function = "randomDecks"
+  buttonParameters.position.z = -0.705
+  buttonParameters.tooltip = "Click to spawn two random decks"
+  _G["GamePanel"].createButton(buttonParameters)
 
   -- new game button
   buttonParameters.label = "New Game"
   buttonParameters.click_function = "newGame"
-  buttonParameters.position.z = -0.6
+  buttonParameters.position.z = -0.235
   buttonParameters.tooltip = "Click to start a new game"
   _G["GamePanel"].createButton(buttonParameters)
 
@@ -98,14 +105,14 @@ function buttonCreationGP()
   buttonParameters.label = "Next Round"
   buttonParameters.click_function = "nextRound"
   buttonParameters.tooltip = "Click to proceed to the next round"
-  buttonParameters.position.z = 0
+  buttonParameters.position.z = 0.235
   _G["GamePanel"].createButton(buttonParameters)
 
   -- next turn button
   buttonParameters.label = "Next Turn"
   buttonParameters.click_function = "nextTurn"
   buttonParameters.tooltip = "Click to proceed to the next turn"
-  buttonParameters.position.z = 0.6
+  buttonParameters.position.z = 0.705
   _G["GamePanel"].createButton(buttonParameters)
 end
 
@@ -725,6 +732,51 @@ end
 function removeCrosses(playerColor)
   for _, obj in ipairs(getObjectsWithTag("Cross" .. playerColor)) do
     obj.destruct()
+  end
+end
+
+function randomDecks()
+  local offsets = {
+    Blue = -10,
+    Red = 10
+  }
+
+  for _, color in ipairs({"Blue", "Red"}) do
+    local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[color])
+    local pos2 = pos + Vector(0, 0, offsets[color] / 2)
+    local rot = _G["Playermat" .. color].getRotation():setAt("z", 180)
+
+    -- spawn movement deck copy
+    local deck1 = _G["SourceMovementDeck"].takeObject({ position = pos, rotation = rot })
+
+    -- spawn attack deck copy
+    local deck2 = _G["SourceAttackDeck"].takeObject({ position = pos2, rotation = rot })
+
+    -- only keep 4 cards each
+    deck1.shuffle()
+    deck2.shuffle()
+
+    local decksize1 = #deck1.getObjects()
+    local decksize2 = #deck2.getObjects()
+
+    for i = 5, decksize1 do
+      local card = deck1.takeObject()
+      card.destruct()
+    end
+
+    for i = 5, decksize2 do
+      local card = deck2.takeObject()
+      card.destruct()
+    end
+
+    -- combine
+    local groupList = group({deck1, deck2})
+
+    -- shuffle
+    groupList[1].setPosition(pos)
+    groupList[1].setRotation(rot)
+    groupList[1].setName("Random Deck")
+    Wait.time(function() groupList[1].shuffle() end, 0.1)
   end
 end
 
