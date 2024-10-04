@@ -534,6 +534,15 @@ function isAttack(cardId)
 end
 
 function resolveCard(params)
+  -- this should only happen when the first players turn already ended the round
+  if params == nil then
+    for _, playerColor in ipairs({"Blue", "Red"}) do
+      _G["Playermat" .. playerColor].call("discardActiveCard")
+      removeCrosses(playerColor)
+    end
+    return
+  end
+
   local playerColor = params.playerColor
   local choiceGrid = params.choiceGrid
 
@@ -1025,6 +1034,9 @@ function roundWin(color)
   else
     broadcastToAll(getColoredName(color) .. " wins round " .. round .. ".", "White")
   end
+
+  -- stop any ongoing cards from resolving
+  choices = {}
 
   -- advance to next round
   Wait.time(nextRound, 1)

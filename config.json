@@ -82,7 +82,7 @@
     "CrossRedSource.c2c3ac"
   ],
   "PlayArea": 0.5,
-  "SaveName": "Heroic Heist 1.1.0",
+  "SaveName": "Heroic Heist 1.1.1",
   "Sky": "Sky_Museum",
   "SkyURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/TropicalForest.jpg?raw=true",
   "TabStates_path": "TabStates.json",
@@ -90,5 +90,5 @@
   "Tags": [],
   "Turns_path": "Turns.json",
   "VersionNumber": "v13.3",
-  "XmlUI_path": "Root.xml"
+  "XmlUI": ""
 }
