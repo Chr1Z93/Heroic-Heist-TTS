@@ -813,8 +813,9 @@ function newGame()
     _G["Deckmat" .. color].call("setNewSpeed", newSpeed)
   end
 
-
   _G["RoundTracker"].call("updateVal", 0)
+  _G["ScoreTrackerBlue"].call("updateVal", 0)
+  _G["ScoreTrackerRed"].call("updateVal", 0)
 
   nextRound()
 end
@@ -959,8 +960,12 @@ function nextTurn()
     broadcastToAll("Turn " .. turn, "Yellow")
 
     -- show "Play a Card" button
-    _G["PlayermatBlue"].call("togglePlayButton")
-    _G["PlayermatRed"].call("togglePlayButton")
+    _G["PlayermatBlue"].call("createButtons")
+    _G["PlayermatRed"].call("createButtons")
+
+    -- allow using "draw" button
+    _G["PlayermatBlue"].setVar("hasDiscardedThisTurn", false)
+    _G["PlayermatRed"].setVar("hasDiscardedThisTurn", false)
   end
 end
 

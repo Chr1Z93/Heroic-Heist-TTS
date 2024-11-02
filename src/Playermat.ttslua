@@ -1,8 +1,9 @@
-local searchLib = require("libraries/SearchLib")
-local deckLib = require("libraries/DeckLib")
+local searchLib      = require("libraries/SearchLib")
+local deckLib        = require("libraries/DeckLib")
 
-local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
-local discardPos = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
+local deckPos        = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
+local discardPos     = self.positionToWorld({ x = 0.096, y = 0.2, z = -0.11 })
+hasDiscardedThisTurn = false
 
 function onLoad()
   math.randomseed(os.time())
@@ -95,6 +96,11 @@ end
 function drawToThree(_, playerColor, _, retry)
   if not allowButtonAccess(playerColor) then return end
 
+  if hasDiscardedThisTurn then
+    broadcastToColor("You are only allowed to discard & draw to 3 once per turn.", playerColor, "Orange")
+    return
+  end
+
   local handObjects = Player[self.getMemo()].getHandObjects()
   if #handObjects > 2 then
     broadcastToColor("You already have 3 or more cards in your hand.", playerColor, "Orange")
@@ -131,6 +137,8 @@ function drawToThree(_, playerColor, _, retry)
   else
     drawDeck.deal(amountToDraw, self.getMemo())
   end
+  broadcastToAll(getColoredName(playerColor) .. " drew " .. amountToDraw .. " card(s).")
+  hasDiscardedThisTurn = true
 end
 
 function allowButtonAccess(playerColor)
@@ -195,7 +203,6 @@ function getActiveCard(noLog)
   local searchResult = searchLib.atPosition(searchPos, "isCardOrDeck")
 
   if #searchResult == 0 then
-
     if not noLog then
       broadcastToAll("Couldn't find active card for " .. self.getMemo() .. ".", "Orange")
     end
@@ -219,9 +226,8 @@ end
 
 function reshuffleDiscard(playerColor)
   local discardPile = getDiscardPile()
-  local deckPos = self.positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
   discardPile.setRotation(self.getRotation():setAt("z", 180))
-  discardPile.setPosition(deckPos)
+  discardPile.setPosition(self.positionToWorld(deckPos))
   Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
 end
 
@@ -242,4 +248,14 @@ function togglePlayButton()
   else
     createButtons()
   end
+end
+
+function getColoredName(playerColor)
+  local displayName = playerColor
+  if Player[playerColor].steam_name then
+    displayName = Player[playerColor].steam_name
+  end
+
+  -- add bb-code
+  return "[" .. Color.fromString(playerColor):toHex() .. "]" .. displayName .. "[-]"
 end
