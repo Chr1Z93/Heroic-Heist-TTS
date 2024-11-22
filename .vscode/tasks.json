@@ -2,14 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build with TTS Mod Manager",
+      "label": "Heroic Heist: Build",
       "type": "shell",
       "command": "go",
       "args": [
         "run",
         "main.go",
-        "--moddir=C:\\git\\Heroic-Heist-TTS",
-        "--modfile=${env:USERPROFILE}\\Documents\\My Games\\Tabletop Simulator\\Saves\\composed.json"
+        "--moddir=${workspaceFolder}",
+        "--modfile=${env:USERPROFILE}\\Documents\\My Games\\Tabletop Simulator\\Saves\\HeroicHeist.json"
       ],
       "options": {
         "cwd": "C:\\git\\TTSModManager"
@@ -17,8 +17,24 @@
       "problemMatcher": [],
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       }
+    },
+    {
+      "label": "Heroic Heist: Decompose",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "run",
+        "main.go",
+        "--moddir=${workspaceFolder}",
+        "--modfile=${env:USERPROFILE}\\Documents\\My Games\\Tabletop Simulator\\Saves\\HeroicHeist.json",
+        "--reverse"
+      ],
+      "options": {
+        "cwd": "C:\\git\\TTSModManager"
+      },
+      "problemMatcher": []
     }
   ]
 }
