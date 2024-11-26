@@ -16,8 +16,25 @@
       },
       "problemMatcher": [],
       "group": {
-        "kind": "build"
+        "kind": "build",
+        "isDefault": false
       }
+    },
+    {
+      "label": "Heroic Heist: Decompose",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "run",
+        "main.go",
+        "--moddir=${workspaceFolder}",
+        "--modfile=${env:USERPROFILE}\\Documents\\My Games\\Tabletop Simulator\\Saves\\HeroicHeist.json",
+        "--reverse"
+      ],
+      "options": {
+        "cwd": "C:\\git\\TTSModManager"
+      },
+      "problemMatcher": []
     }
   ]
 }
