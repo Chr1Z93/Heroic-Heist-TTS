@@ -1,12 +1,14 @@
 require("CardMetadata")
-local searchLib = require("libraries/SearchLib")
+local searchLib  = require("libraries/SearchLib")
 
-STARTING_GRID = {
+DATABASE_URL     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=149116385&single=true&output=csv"
+
+STARTING_GRID    = {
   Blue = { row = 1, col = 3 },
   Red  = { row = 5, col = 3 }
 }
 
-DIRECTION_RIGHT = { Blue = -1, Red = 1 }
+DIRECTION_RIGHT  = { Blue = -1, Red = 1 }
 
 NOT_INTERACTABLE = {
   "PlayArea",
@@ -16,7 +18,7 @@ NOT_INTERACTABLE = {
   "HighlightBoardRed"
 }
 
-GUID_LIST = {
+GUID_LIST        = {
   DeckmatBlue           = "ea89a6",
   DeckmatRed            = "42d92c",
   GamePanel             = "2f5ddb",
@@ -44,7 +46,9 @@ GUID_LIST = {
   TurnTracker           = "6707f1",
 }
 
-choices = {}
+choices          = {}
+database         = {}
+importSpeed      = {}
 
 function onSave()
   return JSON.encode({ guids = GUID_LIST })
@@ -60,6 +64,8 @@ function onLoad(savedData)
   getReferences()
   setNotInteractable()
   buttonCreationGP()
+  updateDatabase()
+  printToAll("Type !load ABCDEFGHIJKLMNO to load data for a specific token.", "White")
 end
 
 -- grab object references
@@ -73,6 +79,140 @@ function setNotInteractable()
   for _, name in ipairs(NOT_INTERACTABLE) do
     _G[name].interactable = false
   end
+end
+
+function onChat(message, sender)
+  if message == "!updateDatabase" then
+    if sender.color ~= "Red" and sender.color ~= "Blue" then
+      printToColor("Make sure you're seated at the Red or Blue seat.", sender.color, "Red")
+      return false
+    end
+
+    updateDatabase(sender.color)
+    return false
+  elseif message:sub(1, 6) == "!load " then
+    if sender.color ~= "Red" and sender.color ~= "Blue" then
+      printToColor("Make sure you're seated at the Red or Blue seat.", sender.color, "Red")
+      return false
+    end
+
+    local token = message:sub(7) -- Extract everything from position 7 onward
+    loadDataForToken(token, sender.color)
+    return false
+  end
+end
+
+function updateDatabase(playerColor)
+  WebRequest.get(DATABASE_URL, function(request)
+    if request.is_error then
+      printToColor(request.error, playerColor or getSeatedPlayers()[1], "Red")
+      printToColor("Type !updateDatase or reload the game to retry.", playerColor or getSeatedPlayers()[1], "Red")
+    else
+      parseDatabase(request.text)
+    end
+  end)
+end
+
+function parseDatabase(str)
+  database = {}
+  local count = 0
+  for line in str:gmatch("[^\n]+") do    -- Split by newline
+    local fields = {}
+    for field in line:gmatch("[^,]+") do -- Split by comma
+      table.insert(fields, trim(field))
+    end
+
+    if #fields == 11 and fields[11] ~= "ID" then
+      count = count + 1
+      database[fields[11]] = {
+        animal  = fields[1],
+        move1   = fields[2],
+        move2   = fields[3],
+        move3   = fields[4],
+        move4   = fields[5],
+        attack1 = fields[6],
+        attack2 = fields[7],
+        attack3 = fields[8],
+        attack4 = fields[9],
+        speed   = fields[10]
+      }
+    end
+  end
+  printToAll("Database loaded (" .. count .. " entries).", "White")
+end
+
+function loadDataForToken(token, playerColor)
+  local data = database[token]
+  if not data then
+    printToColor("No data found for " .. token, playerColor, "Red")
+    return
+  end
+
+  printToColor("Loading data for " .. token, playerColor, "White")
+
+  importSpeed[playerColor] = data.speed
+
+  local wantedCards = {}
+  for thing, name in pairs(data) do
+    if thing ~= "animal" and thing ~= "speed" then
+      wantedCards[name] = true
+    end
+  end
+
+  local offsets = {
+    Blue = -10,
+    Red = 10
+  }
+
+  local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[playerColor])
+  local pos2 = pos + Vector(0, 0, offsets[playerColor] / 2)
+  local rot = _G["Playermat" .. playerColor].getRotation():setAt("z", 180)
+
+  -- spawn movement deck copy
+  local movementDeck = _G["SourceMovementDeck"].takeObject({ position = pos, rotation = rot })
+
+  -- spawn attack deck copy
+  local attackDeck = _G["SourceAttackDeck"].takeObject({ position = pos2, rotation = rot })
+
+  -- only keep wanted cards
+  local keptMovementCards = removeNonmatchingCards(movementDeck, wantedCards)
+  local keptAttackCards = removeNonmatchingCards(attackDeck, wantedCards)
+
+  if keptMovementCards ~= 4 then
+    log(keptMovementCards)
+    printToColor("Not enough attack cards found.", playerColor, "Red")
+  end
+
+  if keptAttackCards ~= 4 then
+    log(keptAttackCards)
+    printToColor("Not enough attack cards found.", playerColor, "Red")
+  end
+
+  -- combine
+  local importedDeck = group({ movementDeck, attackDeck })
+
+  -- shuffle
+  importedDeck.setPosition(pos)
+  importedDeck.setRotation(rot)
+  importedDeck.setName("Imported Deck")
+  Wait.time(function() importedDeck.shuffle() end, 0.1)
+end
+
+function removeNonmatchingCards(deck, wantedCards)
+  local keptCards = 0
+  for _, cardInfo in ipairs(deck.getObjects()) do
+    if wantedCards[cardInfo.name] then
+      keptCards = keptCards + 1
+    else
+      local card = deck.takeObject({ guid = cardInfo.guid })
+      card.destruct()
+    end
+  end
+  return keptCards
+end
+
+function trim(s)
+  return s:match("^%s*(.-)%s*$") -- Removes spaces, tabs, newlines, and carriage returns
 end
 
 -- create buttons on the game panel
@@ -536,7 +676,7 @@ end
 function resolveCard(params)
   -- this should only happen when the first players turn already ended the round
   if params == nil then
-    for _, playerColor in ipairs({"Blue", "Red"}) do
+    for _, playerColor in ipairs({ "Blue", "Red" }) do
       _G["Playermat" .. playerColor].call("discardActiveCard")
       removeCrosses(playerColor)
     end
@@ -613,7 +753,9 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
 
   -- check for movement block
   if eGrid.row == nextGrid.row and eGrid.col == nextGrid.col then
-    broadcastToAll(getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")", "White")
+    broadcastToAll(
+      getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")",
+      "White")
     maybeTakeControlOfRelic(playerColor)
     return
   end
@@ -669,8 +811,8 @@ function getMoveSpot(md, playerColor, startGrid, endGrid, step)
     if maxFollowUpSteps == 0 then return newGrid end
 
     -- add second part of movement
-    newGrid.row = newGrid.row + (step - startSteps)/maxFollowUpSteps * (endGrid.row - newGrid.row)
-    newGrid.col = newGrid.col + (step - startSteps)/maxFollowUpSteps * (endGrid.col - newGrid.col)
+    newGrid.row = newGrid.row + (step - startSteps) / maxFollowUpSteps * (endGrid.row - newGrid.row)
+    newGrid.col = newGrid.col + (step - startSteps) / maxFollowUpSteps * (endGrid.col - newGrid.col)
     return newGrid
   end
 
@@ -691,8 +833,8 @@ function getMoveSpot(md, playerColor, startGrid, endGrid, step)
     -- make sure we're not leaving the board
     if newGrid.row > 5 or newGrid.row < 1 or newGrid.col > 5 or newGrid.col < 1 then
       return {
-        row = startGrid.row + rowDirection * (step -1),
-        col = startGrid.col + colDirection * (step -1)
+        row = startGrid.row + rowDirection * (step - 1),
+        col = startGrid.col + colDirection * (step - 1)
       }
     else
       return newGrid
@@ -703,7 +845,7 @@ function getMoveSpot(md, playerColor, startGrid, endGrid, step)
   if md.moveSets then
     for _, data in ipairs(md.moveSets) do
       local newTarget = { row = startGrid.row, col = startGrid.col }
-      local targetList = { }
+      local targetList = {}
 
       -- add moves 1 by 1
       for _, move in ipairs(data) do
@@ -750,7 +892,7 @@ function randomDecks()
     Red = 10
   }
 
-  for _, color in ipairs({"Blue", "Red"}) do
+  for _, color in ipairs({ "Blue", "Red" }) do
     local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[color])
     local pos2 = pos + Vector(0, 0, offsets[color] / 2)
     local rot = _G["Playermat" .. color].getRotation():setAt("z", 180)
@@ -779,7 +921,7 @@ function randomDecks()
     end
 
     -- combine
-    local groupList = group({deck1, deck2})
+    local groupList = group({ deck1, deck2 })
 
     -- shuffle
     groupList[1].setPosition(pos)
@@ -802,9 +944,14 @@ function newGame()
   for _, color in ipairs({ "Blue", "Red" }) do
     -- get new speed until new value found
     local newSpeed
-    repeat
-      newSpeed = math.random(1, 100)
-    until speedList[newSpeed] ~= true
+
+    if importSpeed[color] then
+      newSpeed = importSpeed[color]
+    else
+      repeat
+        newSpeed = math.random(1, 100)
+      until speedList[newSpeed] ~= true
+    end
 
     -- store speed
     speedList[newSpeed] = true
@@ -895,9 +1042,11 @@ function nextRound()
     _G["PlayerToken" .. color] = _G["SourcePlayerToken" .. color].takeObject({
       position = convertGridToPos(STARTING_GRID[color]),
       rotation = mat.getRotation(),
-      smooth = false
+      smooth   = false
     })
     GUID_LIST["PlayerToken" .. color] = _G["PlayerToken" .. color].getGUID()
+
+    -- TODO: update URL from import data
 
     -- reset health trackers
     _G["HealthTracker" .. color].call("updateVal", 100)
@@ -906,7 +1055,7 @@ function nextRound()
       -- give players copies of cards to assemble their deck
       local pos1 = Vector(DIRECTION_RIGHT[color] * 2.5, 0.2, 0)
       local pos2 = Vector(DIRECTION_RIGHT[color] * 3.5, 0.2, 0)
-      local rot = mat.getRotation()
+      local rot  = mat.getRotation()
       _G["SourceMovementDeck"].takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
       _G["SourceAttackDeck"].takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
     end
