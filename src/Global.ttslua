@@ -1,7 +1,7 @@
 require("CardMetadata")
 local searchLib  = require("libraries/SearchLib")
 
-DATABASE_URL     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=149116385&single=true&output=csv"
+DATABASE_URL     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=674952270&single=true&output=csv"
 
 STARTING_GRID    = {
   Blue = { row = 1, col = 3 },
@@ -49,6 +49,7 @@ GUID_LIST        = {
 choices          = {}
 database         = {}
 importSpeed      = {}
+importAnimal      = {}
 
 function onSave()
   return JSON.encode({ guids = GUID_LIST })
@@ -90,7 +91,14 @@ function onChat(message, sender)
 
     updateDatabase(sender.color)
     return false
-  elseif message:sub(1, 6) == "!load " then
+  elseif message:sub(1, 5) == "!load" then
+    if #message == 5 then
+      printToColor("Loaded ID was reset.", sender.color, "Green")
+      importSpeed[sender.color] = nil
+      importAnimal[sender.color] = nil
+      return false
+    end
+
     if sender.color ~= "Red" and sender.color ~= "Blue" then
       printToColor("Make sure you're seated at the Red or Blue seat.", sender.color, "Red")
       return false
@@ -122,19 +130,19 @@ function parseDatabase(str)
       table.insert(fields, trim(field))
     end
 
-    if #fields == 11 and fields[11] ~= "ID" then
+    if #fields == 11 then
       count = count + 1
-      database[fields[11]] = {
-        animal  = fields[1],
-        move1   = fields[2],
-        move2   = fields[3],
-        move3   = fields[4],
-        move4   = fields[5],
-        attack1 = fields[6],
-        attack2 = fields[7],
-        attack3 = fields[8],
-        attack4 = fields[9],
-        speed   = fields[10]
+      database[fields[1]] = {
+        animal  = fields[2],
+        move1   = fields[3],
+        move2   = fields[4],
+        move3   = fields[5],
+        move4   = fields[6],
+        attack1 = fields[7],
+        attack2 = fields[8],
+        attack3 = fields[9],
+        attack4 = fields[10],
+        speed   = fields[11]
       }
     end
   end
@@ -148,54 +156,70 @@ function loadDataForToken(token, playerColor)
     return
   end
 
-  printToColor("Loading data for " .. token, playerColor, "White")
+  function coInsideLoading()
+    printToColor("Loading data for " .. token, playerColor, "White")
 
-  importSpeed[playerColor] = data.speed
+    importSpeed[playerColor] = tonumber(data.speed)
+    importAnimal[playerColor] = data.animal
 
-  local wantedCards = {}
-  for thing, name in pairs(data) do
-    if thing ~= "animal" and thing ~= "speed" then
-      wantedCards[name] = true
+    local wantedCards = {}
+    for thing, name in pairs(data) do
+      if thing ~= "animal" and thing ~= "speed" then
+        wantedCards[name] = true
+      end
     end
+
+    local offsets = {
+      Blue = -10,
+      Red = 10
+    }
+
+    local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[playerColor])
+    local pos2 = pos + Vector(0, 0, offsets[playerColor] / 2)
+    local rot = _G["Playermat" .. playerColor].getRotation():setAt("z", 180)
+
+    -- spawn movement deck copy
+    local movementDeck = _G["SourceMovementDeck"].takeObject({ position = pos, rotation = rot })
+
+    -- spawn attack deck copy
+    local attackDeck = _G["SourceAttackDeck"].takeObject({ position = pos2, rotation = rot })
+
+    coWait(0.5)
+
+    -- only keep wanted cards
+    local keptMovementCards = removeNonmatchingCards(movementDeck, wantedCards)
+    local keptAttackCards = removeNonmatchingCards(attackDeck, wantedCards)
+
+    if keptMovementCards ~= 4 then
+      log(keptMovementCards)
+      printToColor("Not enough movement cards found.", playerColor, "Red")
+      return
+    end
+
+    if keptAttackCards ~= 4 then
+      log(keptAttackCards)
+      printToColor("Not enough attack cards found.", playerColor, "Red")
+      return
+    end
+
+    coWait(0.25)
+
+    local deckPos = _G["Playermat" .. playerColor].positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
+    movementDeck.setPosition(deckPos)
+
+    -- combine
+    movementDeck.putObject(attackDeck)
+
+    coWait(0.25)
+
+    -- shuffle
+    movementDeck.setRotation(rot)
+    movementDeck.setName("Imported Deck")
+    movementDeck.shuffle()
+    return 1
   end
 
-  local offsets = {
-    Blue = -10,
-    Red = 10
-  }
-
-  local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[playerColor])
-  local pos2 = pos + Vector(0, 0, offsets[playerColor] / 2)
-  local rot = _G["Playermat" .. playerColor].getRotation():setAt("z", 180)
-
-  -- spawn movement deck copy
-  local movementDeck = _G["SourceMovementDeck"].takeObject({ position = pos, rotation = rot })
-
-  -- spawn attack deck copy
-  local attackDeck = _G["SourceAttackDeck"].takeObject({ position = pos2, rotation = rot })
-
-  -- only keep wanted cards
-  local keptMovementCards = removeNonmatchingCards(movementDeck, wantedCards)
-  local keptAttackCards = removeNonmatchingCards(attackDeck, wantedCards)
-
-  if keptMovementCards ~= 4 then
-    log(keptMovementCards)
-    printToColor("Not enough attack cards found.", playerColor, "Red")
-  end
-
-  if keptAttackCards ~= 4 then
-    log(keptAttackCards)
-    printToColor("Not enough attack cards found.", playerColor, "Red")
-  end
-
-  -- combine
-  local importedDeck = group({ movementDeck, attackDeck })
-
-  -- shuffle
-  importedDeck.setPosition(pos)
-  importedDeck.setRotation(rot)
-  importedDeck.setName("Imported Deck")
-  Wait.time(function() importedDeck.shuffle() end, 0.1)
+  startLuaCoroutine(Global, "coInsideLoading")
 end
 
 function removeNonmatchingCards(deck, wantedCards)
@@ -933,7 +957,7 @@ end
 
 function newGame()
   for _, obj in ipairs(getObjects()) do
-    if obj.locked == false then
+    if obj.locked == false and obj.getName() ~= "Imported Deck" then
       obj.destruct()
     end
   end
@@ -993,17 +1017,11 @@ function nextRound()
   broadcastToAll("--- Round " .. round .. " ---", "Orange")
   broadcastToAll(getColoredName(firstPlayer) .. " goes first this round.")
 
-  -- temporarily lock all cards and decks to exclude them from clean up
-  for _, obj in ipairs(getObjects()) do
-    if obj.type == "Card" or obj.type == "Deck" then
-      obj.setLock(true)
-      Wait.time(function() obj.setLock(false) end, 2)
-    end
-  end
-
-  -- reset play area
+  -- reset play area (keep cards and decks)
   for _, obj in ipairs(searchLib.onObject(_G["PlayArea"], "isUnlocked")) do
-    obj.destruct()
+    if obj.type ~= "Card" and obj.type ~= "Deck" then
+      obj.destruct()
+    end
   end
 
   -- reset turn tracker
@@ -1032,26 +1050,34 @@ function nextRound()
 
     -- reset playerboards
     for _, obj in ipairs(searchLib.onObject(mat, "isUnlocked")) do
-      obj.destruct()
+      if obj.type ~= "Card" and obj.type ~= "Deck" then
+        obj.destruct()
+      end
     end
 
     -- make sure all buttons are shown
     mat.call("createButtons")
 
     -- spawn player tokens
-    _G["PlayerToken" .. color] = _G["SourcePlayerToken" .. color].takeObject({
-      position = convertGridToPos(STARTING_GRID[color]),
-      rotation = mat.getRotation(),
-      smooth   = false
-    })
-    GUID_LIST["PlayerToken" .. color] = _G["PlayerToken" .. color].getGUID()
+    local tokenData = _G["SourcePlayerToken" .. color].getData().ContainedObjects[1]
 
-    -- TODO: update URL from import data
+    -- maybe update URL based on ID
+    if importAnimal[color] then
+      tokenData.CustomImage.ImageURL = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/Avatars/" .. importAnimal[color] .. "_" .. color .. ".png?raw=true"
+    end
+
+    _G["PlayerToken" .. color] = spawnObjectData({
+      data     = tokenData,
+      position = convertGridToPos(STARTING_GRID[color]),
+      rotation = mat.getRotation()
+    })
+
+    GUID_LIST["PlayerToken" .. color] = _G["PlayerToken" .. color].getGUID()
 
     -- reset health trackers
     _G["HealthTracker" .. color].call("updateVal", 100)
 
-    if round == 1 then
+    if round == 1 and importSpeed[color] == nil then
       -- give players copies of cards to assemble their deck
       local pos1 = Vector(DIRECTION_RIGHT[color] * 2.5, 0.2, 0)
       local pos2 = Vector(DIRECTION_RIGHT[color] * 3.5, 0.2, 0)
