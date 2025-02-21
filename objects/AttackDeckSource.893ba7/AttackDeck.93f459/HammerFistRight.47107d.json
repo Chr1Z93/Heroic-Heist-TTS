@@ -5,19 +5,19 @@
     "z": 0
   },
   "Autoraise": true,
-  "CardID": 300,
+  "CardID": 116,
   "ColorDiffuse": {
     "b": 0.71324,
     "g": 0.71324,
     "r": 0.71324
   },
   "CustomDeck": {
-    "3": {
+    "1": {
       "BackIsHidden": true,
       "BackURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/Back_logo.png?raw=true",
-      "FaceURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards/Card50.png?raw=true",
-      "NumHeight": 1,
-      "NumWidth": 1,
+      "FaceURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playercards2/decksheet.png?raw=true",
+      "NumHeight": 7,
+      "NumWidth": 10,
       "Type": 0,
       "UniqueBack": false
     }

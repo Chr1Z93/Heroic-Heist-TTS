@@ -5,8 +5,8 @@ local deckPos          = self.positionToWorld({ x = -0.675, y = 0.2, z = 0.602 }
 local discardPos       = self.positionToWorld({ x = 0, y = 0.2, z = 0.602 })
 hasDiscardedThisTurn   = false
 
-local deckDisplaySlot1 = Vector(-0.767, 0.11, -0.693)
-local deckDisplaySlot8 = Vector(0.385, 0.11, -0.18)
+local deckDisplaySlot1 = Vector(-0.767, 0.25, -0.693)
+local deckDisplaySlot8 = Vector(0.385, 0.25, -0.18)
 local deckDisplaySlots = {}
 local speed            = 0
 
@@ -87,10 +87,18 @@ end
 function makeDeckDisplaySlots()
   deckDisplaySlots = {}
 
-  for i = 1, 8 do
-    local slotX = deckDisplaySlot1.x + (deckDisplaySlot8.x - deckDisplaySlot1.x) * (i - 1) / 3
-    local slotZ = (i <= 4) and deckDisplaySlot1.z or deckDisplaySlot8.z
-    table.insert(deckDisplaySlots, self.positionToWorld(Vector(slotX, deckDisplaySlot1.y, slotZ)))
+  local columns = 4
+  local rows = 2
+
+  local spacingX = (deckDisplaySlot8.x - deckDisplaySlot1.x) / (columns - 1)
+  local spacingZ = (deckDisplaySlot8.z - deckDisplaySlot1.z) / (rows - 1)
+
+  for row = 0, rows - 1 do
+    for col = 0, columns - 1 do
+      local slotX = deckDisplaySlot1.x + (col + 1) * spacingX
+      local slotZ = deckDisplaySlot1.z + row * spacingZ
+      table.insert(deckDisplaySlots, self.positionToWorld(Vector(slotX, deckDisplaySlot1.y, slotZ)))
+    end
   end
 end
 
@@ -309,12 +317,6 @@ function getSpeed()
   return speed
 end
 
-function reset()
-  for _, obj in ipairs(searchLib.onObject(self, "isCard")) do
-    obj.destruct()
-  end
-end
-
 function updateDisplay()
   -- get rotation of playermat
   local selfRot = self.getRotation()
@@ -358,7 +360,10 @@ function updateDisplay()
   table.sort(cardDataList, function(a, b) return a.GMNotes < b.GMNotes end)
 
   -- remove current cards
-  reset()
+  local pos2 = self.positionToWorld(Vector(0, 0, -0.6))
+  for _, obj in ipairs(searchLib.inArea(pos2, _, Vector(14, 1, 6), "isCardOrDeck")) do
+    obj.destruct()
+  end
 
   -- spawn the card list
   for i, data in ipairs(cardDataList) do
