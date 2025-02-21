@@ -902,7 +902,7 @@ function randomDecks()
   }
 
   for _, color in ipairs({ "Blue", "Red" }) do
-    local pos = _G["GamePanel"].getPosition() + Vector(0, 1.5, offsets[color])
+    local pos = _G["GamePanel"].getPosition() + Vector(-28.25, 1.5, offsets[color])
     local pos2 = pos + Vector(0, 0, offsets[color] / 2)
     local rot = _G["Playermat" .. color].getRotation():setAt("z", 180)
 
@@ -1064,8 +1064,8 @@ function nextRound()
 
     if round == 1 and importSpeed[color] == nil then
       -- give players copies of cards to assemble their deck
-      local pos1 = Vector(DIRECTION_RIGHT[color] * 2.5, 0.2, 0)
-      local pos2 = Vector(DIRECTION_RIGHT[color] * 3.5, 0.2, 0)
+      local pos1 = Vector(DIRECTION_RIGHT[color] * -1.5, 0.2, 1.8)
+      local pos2 = Vector(DIRECTION_RIGHT[color] * -1.5, 0.2, 2.5)
       local rot  = mat.getRotation()
       _G["SourceMovementDeck"].takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
       _G["SourceAttackDeck"].takeObject({ position = mat.positionToWorld(pos2), rotation = rot })

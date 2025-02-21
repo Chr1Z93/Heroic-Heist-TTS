@@ -132,10 +132,10 @@
     "posZ": 3.402,
     "rotX": 0,
     "rotY": 180,
-    "rotZ": 181,
-    "scaleX": 1,
+    "rotZ": 180,
+    "scaleX": 1.2,
     "scaleY": 1,
-    "scaleZ": 1
+    "scaleZ": 1.2
   },
   "Value": 0,
   "XmlUI": ""

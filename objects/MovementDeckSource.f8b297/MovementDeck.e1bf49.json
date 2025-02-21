@@ -88,12 +88,12 @@
     "posX": 56.038,
     "posY": 4.699,
     "posZ": 5.493,
-    "rotX": 359,
+    "rotX": 0,
     "rotY": 180,
     "rotZ": 180,
-    "scaleX": 1,
+    "scaleX": 1.2,
     "scaleY": 1,
-    "scaleZ": 1
+    "scaleZ": 1.2
   },
   "Value": 0,
   "XmlUI": ""
