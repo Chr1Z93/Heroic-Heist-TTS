@@ -19,8 +19,6 @@ NOT_INTERACTABLE = {
 }
 
 GUID_LIST        = {
-  DeckmatBlue           = "ea89a6",
-  DeckmatRed            = "42d92c",
   GamePanel             = "2f5ddb",
   HealthTrackerBlue     = "29b826",
   HealthTrackerRed      = "5a08bb",
@@ -31,8 +29,8 @@ GUID_LIST        = {
   PlayArea              = "5ef1de",
   PlayAreaBlue          = "76b598",
   PlayAreaRed           = "7e4f92",
-  PlayermatBlue         = "1f4fe0",
-  PlayermatRed          = "9c3ece",
+  PlayermatBlue         = "4ed1c1",
+  PlayermatRed          = "679017",
   RoundTracker          = "bbd4df",
   ScoreTrackerBlue      = "aba675",
   ScoreTrackerRed       = "bf8e2e",
@@ -638,8 +636,8 @@ function getResolveOrder()
   }
 
   -- get speed of players
-  local speedBlue = _G["DeckmatBlue"].call("getSpeed")
-  local speedRed = _G["DeckmatRed"].call("getSpeed")
+  local speedBlue = _G["PlayermatBlue"].call("getSpeed")
+  local speedRed = _G["PlayermatRed"].call("getSpeed")
 
   -- get round number
   local roundNumber = _G["RoundTracker"].getVar("val")
@@ -967,8 +965,8 @@ function newGame()
     -- store speed
     speedList[newSpeed] = true
 
-    -- get new speed value for deckmats
-    _G["Deckmat" .. color].call("setNewSpeed", newSpeed)
+    -- get new speed value for playermats
+    _G["Playermat" .. color].call("setNewSpeed", newSpeed)
   end
 
   _G["RoundTracker"].call("updateVal", 0)
@@ -985,8 +983,8 @@ function nextRound()
   local round = _G["RoundTracker"].call("addOrSubtract", 1)
 
   -- announce player that goes first
-  local speedBlue = _G["DeckmatBlue"].call("getSpeed")
-  local speedRed = _G["DeckmatRed"].call("getSpeed")
+  local speedBlue = _G["PlayermatBlue"].call("getSpeed")
+  local speedRed = _G["PlayermatRed"].call("getSpeed")
 
   local firstPlayer = "Blue"
   if round % 2 == 0 then
