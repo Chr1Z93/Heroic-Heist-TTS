@@ -1,8 +1,9 @@
 local searchLib        = require("libraries/SearchLib")
 local deckLib          = require("libraries/DeckLib")
 
-local deckPos          = self.positionToWorld({ x = -0.675, y = 0.2, z = 0.602 })
-local discardPos       = self.positionToWorld({ x = 0, y = 0.2, z = 0.602 })
+local deckPos          = self.positionToWorld({ x = -0.685, y = 0.2, z = 0.602 })
+local discardPos       = self.positionToWorld({ x = 0,      y = 0.2, z = 0.602 })
+local playedCardPos    = self.positionToWorld({ x = 0.685,  y = 0.2, z = 0.546 })
 hasDiscardedThisTurn   = false
 
 local deckDisplaySlot1 = Vector(-0.767, 0.25, -0.693)
@@ -243,8 +244,7 @@ end
 
 -- returns a reference to the active card
 function getActiveCard(noLog)
-  local searchPos = self.positionToWorld(Vector(-1.197, 0.2, 0.343))
-  local searchResult = searchLib.atPosition(searchPos, "isCardOrDeck")
+  local searchResult = searchLib.atPosition(playedCardPos, "isCardOrDeck")
 
   if #searchResult == 0 then
     if not noLog then

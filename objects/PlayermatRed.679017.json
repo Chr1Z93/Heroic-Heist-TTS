@@ -4,6 +4,29 @@
     "y": 0,
     "z": 0
   },
+  "AttachedSnapPoints": [
+    {
+      "Position": {
+        "x": 0.685,
+        "y": 0.2,
+        "z": 0.602
+      }
+    },
+    {
+      "Position": {
+        "x": 0,
+        "y": 0.2,
+        "z": 0.602
+      }
+    },
+    {
+      "Position": {
+        "x": -0.685,
+        "y": 0.2,
+        "z": 0.546
+      }
+    }
+  ],
   "Autoraise": true,
   "ColorDiffuse": {
     "b": 0,
@@ -34,7 +57,6 @@
   "LayoutGroupSortIndex": 0,
   "Locked": true,
   "LuaScript": "require(\"Playermat\")",
-  "LuaScriptState": "",
   "MeasureMovement": false,
   "Memo": "Red",
   "Name": "Custom_Tile",
