@@ -19,7 +19,7 @@
     },
     "ImageScalar": 1,
     "ImageSecondaryURL": "",
-    "ImageURL": "http://cloud-3.steamusercontent.com/ugc/2115061845796985108/F0ADB7094641DA966FFA3AF0CC6987D33D2D9591/",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/2115061845796985108/F0ADB7094641DA966FFA3AF0CC6987D33D2D9591/",
     "WidthScale": 0
   },
   "Description": "",
@@ -42,7 +42,7 @@
   "Sticky": true,
   "Tooltip": false,
   "Transform": {
-    "posX": 24,
+    "posX": 43,
     "posY": 2.5,
     "posZ": 0,
     "rotX": 0,

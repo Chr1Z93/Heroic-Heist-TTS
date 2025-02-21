@@ -1,0 +1,12 @@
+{
+  "labels": [
+    {
+      "displayed": "CrossBlue",
+      "normalized": "crossblue"
+    },
+    {
+      "displayed": "CrossRed",
+      "normalized": "crossred"
+    }
+  ]
+}

@@ -12,20 +12,20 @@
   },
   "CustomImage": {
     "CustomToken": {
-      "MergeDistancePixels": 5,
+      "MergeDistancePixels": 15,
       "Stackable": false,
       "StandUp": false,
       "Thickness": 0.2
     },
     "ImageScalar": 1,
     "ImageSecondaryURL": "",
-    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/cross_blue.png?raw=true",
+    "ImageURL": "https://raw.githubusercontent.com/Chr1Z93/Heroic-Heist-TTS/main/assets/SplashLogo.png",
     "WidthScale": 0
   },
   "Description": "",
-  "DragSelectable": false,
+  "DragSelectable": true,
   "GMNotes": "",
-  "GUID": "4a2bf9",
+  "GUID": "50d7b8",
   "Grid": true,
   "GridProjection": false,
   "Hands": false,
@@ -37,23 +37,20 @@
   "LuaScriptState": "",
   "MeasureMovement": false,
   "Name": "Custom_Token",
-  "Nickname": "CrossBlue",
+  "Nickname": "Logo",
   "Snap": true,
   "Sticky": true,
-  "Tags": [
-    "CrossBlue"
-  ],
   "Tooltip": false,
   "Transform": {
-    "posX": 22.35,
-    "posY": 4.673,
-    "posZ": -7.956,
+    "posX": 34,
+    "posY": 2.45,
+    "posZ": -30,
     "rotX": 0,
-    "rotY": 135,
+    "rotY": 180,
     "rotZ": 0,
-    "scaleX": 0.5,
+    "scaleX": 4,
     "scaleY": 1,
-    "scaleZ": 0.5
+    "scaleZ": 4
   },
   "Value": 0,
   "XmlUI": ""

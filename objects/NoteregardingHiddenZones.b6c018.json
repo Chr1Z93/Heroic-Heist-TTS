@@ -42,15 +42,15 @@
   "Sticky": true,
   "Tooltip": false,
   "Transform": {
-    "posX": 37.5,
-    "posY": 2.501,
-    "posZ": 0.003,
+    "posX": -38,
+    "posY": 2.5,
+    "posZ": 0,
     "rotX": 0,
-    "rotY": 270,
+    "rotY": 90,
     "rotZ": 0,
-    "scaleX": 6.5,
+    "scaleX": 6,
     "scaleY": 1,
-    "scaleZ": 6.5
+    "scaleZ": 6
   },
   "Value": 0,
   "XmlUI": ""

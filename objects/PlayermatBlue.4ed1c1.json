@@ -4,44 +4,6 @@
     "y": 0,
     "z": 0
   },
-  "AttachedSnapPoints": [
-    {
-      "Position": {
-        "x": 1.243,
-        "y": 0.2,
-        "z": -0.11
-      },
-      "Rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 180
-      }
-    },
-    {
-      "Position": {
-        "x": -1.197,
-        "y": 0.2,
-        "z": 0.343
-      },
-      "Rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 180
-      }
-    },
-    {
-      "Position": {
-        "x": 0.096,
-        "y": 0.2,
-        "z": -0.11
-      },
-      "Rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      }
-    }
-  ],
   "Autoraise": true,
   "ColorDiffuse": {
     "b": 0,
@@ -53,17 +15,17 @@
       "Stackable": false,
       "Stretch": true,
       "Thickness": 0.2,
-      "Type": 3
+      "Type": 0
     },
     "ImageScalar": 1,
     "ImageSecondaryURL": "",
-    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/playermat_blue.png?raw=true",
+    "ImageURL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/NewHeroMat_Blue.png?raw=true",
     "WidthScale": 0
   },
   "Description": "",
   "DragSelectable": true,
   "GMNotes": "",
-  "GUID": "1f4fe0",
+  "GUID": "4ed1c1",
   "Grid": true,
   "GridProjection": false,
   "Hands": false,
@@ -76,20 +38,20 @@
   "MeasureMovement": false,
   "Memo": "Blue",
   "Name": "Custom_Tile",
-  "Nickname": "PlayermatBlue",
+  "Nickname": "Playermat Blue",
   "Snap": true,
   "Sticky": true,
-  "Tooltip": false,
+  "Tooltip": true,
   "Transform": {
-    "posX": 0,
-    "posY": 2.5,
-    "posZ": -22,
+    "posX": 27,
+    "posY": 2.501,
+    "posZ": -8.981,
     "rotX": 0,
     "rotY": 180,
     "rotZ": 0,
-    "scaleX": 4.3,
+    "scaleX": 8,
     "scaleY": 1,
-    "scaleZ": 4.3
+    "scaleZ": 8
   },
   "Value": 0,
   "XmlUI": ""
