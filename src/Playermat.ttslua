@@ -1,15 +1,16 @@
 local searchLib        = require("libraries/SearchLib")
 local deckLib          = require("libraries/DeckLib")
 
-local deckPos          = self.positionToWorld({ x = -0.685, y = 0.2, z = 0.602 })
+local deckPos          = self.positionToWorld({ x = 0.685,  y = 0.2, z = 0.602 })
 local discardPos       = self.positionToWorld({ x = 0,      y = 0.2, z = 0.602 })
-local playedCardPos    = self.positionToWorld({ x = 0.685,  y = 0.2, z = 0.546 })
+local playedCardPos    = self.positionToWorld({ x = -0.685, y = 0.2, z = 0.546 })
 hasDiscardedThisTurn   = false
 
 local deckDisplaySlot1 = Vector(-0.767, 0.25, -0.693)
 local deckDisplaySlot8 = Vector(0.385, 0.25, -0.18)
 local deckDisplaySlots = {}
 local speed            = 0
+local displayId        = "0000"
 
 function onSave() return speed end
 
@@ -27,6 +28,32 @@ end
 
 function createButtons()
   self.clearButtons()
+
+  -- speed button
+  self.createButton({
+    function_owner = self,
+    height = 0,
+    width = 0,
+    scale = { 0.2, 0.2, 0.2 },
+    font_size = speedFontSize(),
+    font_color = "White",
+    label = speed,
+    click_function = "none",
+    position = { x = -0.3, y = 0.2, z = 0.14 }
+  })
+
+  -- hero ID button
+  self.createButton({
+    function_owner = self,
+    height = 0,
+    width = 0,
+    scale = { 0.2, 0.2, 0.2 },
+    font_size = 300,
+    font_color = "White",
+    label = displayId,
+    click_function = "none",
+    position = { x = 0.8, y = 0.2, z = 0.14 }
+  })
 
   -- get direction to global left
   local pos = self.positionToLocal(Vector(38, 0, 0))
@@ -70,19 +97,10 @@ function createButtons()
   buttonParameters.position = { x = 0.65, y = 0.2, z = 1.15 }
   buttonParameters.tooltip = "Click to resolve the active card"
   self.createButton(buttonParameters)
+end
 
-  -- speed button
-  self.createButton({
-    function_owner = self,
-    height = 0,
-    width = 0,
-    scale = { 0.2, 0.2, 0.2 },
-    font_size = 350,
-    font_color = "White",
-    label = speed,
-    click_function = "none",
-    position = { x = -0.3, y = 0.2, z = 0.14 }
-  })
+function speedFontSize()
+  return (speed == 100) and 250 or 350
 end
 
 function makeDeckDisplaySlots()
@@ -141,10 +159,10 @@ end
 function drawToThree(_, playerColor, _, retry)
   if not allowButtonAccess(playerColor) then return end
 
-  if hasDiscardedThisTurn then
+  --[[if hasDiscardedThisTurn then
     broadcastToColor("You are only allowed to discard & draw to 3 once per turn.", playerColor, "Orange")
     return
-  end
+  end]]
 
   local handObjects = Player[self.getMemo()].getHandObjects()
   if #handObjects > 2 then
@@ -271,7 +289,7 @@ end
 function reshuffleDiscard(playerColor)
   local discardPile = getDiscardPile()
   discardPile.setRotation(self.getRotation():setAt("z", 180))
-  discardPile.setPosition(self.positionToWorld(deckPos))
+  discardPile.setPosition(deckPos)
   Wait.time(function() drawToThree(_, playerColor, _, true) end, 0.1)
 end
 
@@ -310,7 +328,12 @@ end
 
 function setNewSpeed(newSpeed)
   speed = newSpeed
-  self.editButton({ index = 0, label = speed })
+  self.editButton({ index = 0, label = speed, font_size = speedFontSize() })
+end
+
+function setDisplayId(newId)
+  displayId = newId
+  self.editButton({ index = 1, label = newId })
 end
 
 function getSpeed()
@@ -372,7 +395,12 @@ function updateDisplay()
     data.Transform.posY = deckDisplaySlots[i].y
     data.Transform.posZ = deckDisplaySlots[i].z
     data.Locked = true
+    data.Tooltip = false
 
     spawnObjectData({ data = data })
   end
+end
+
+function getDeckPos()
+  return deckPos
 end

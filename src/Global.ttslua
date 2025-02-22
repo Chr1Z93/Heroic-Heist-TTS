@@ -11,14 +11,24 @@ STARTING_GRID    = {
 DIRECTION_RIGHT  = { Blue = -1, Red = 1 }
 
 NOT_INTERACTABLE = {
+  "Logo1",
+  "Logo2",
+  "Logo3",
+  "Logo4",
   "PlayArea",
   "PlayAreaBlue",
   "PlayAreaRed",
+  "PlayermatBlue",
+  "PlayermatRed",
   "HighlightBoardBlue",
   "HighlightBoardRed"
 }
 
 GUID_LIST        = {
+  Logo1                 = "50d7b8",
+  Logo2                 = "f940da",
+  Logo3                 = "adcd0f",
+  Logo4                 = "efb262",
   GamePanel             = "2f5ddb",
   HealthTrackerBlue     = "29b826",
   HealthTrackerRed      = "5a08bb",
@@ -46,17 +56,26 @@ GUID_LIST        = {
 
 choices          = {}
 database         = {}
+importAnimal     = {}
+importDisplayId  = {}
 importSpeed      = {}
-importAnimal      = {}
 
 function onSave()
-  return JSON.encode({ guids = GUID_LIST })
+  return JSON.encode({
+    guids           = GUID_LIST,
+    importAnimal    = importAnimal,
+    importDisplayId = importDisplayId,
+    importSpeed     = importSpeed
+  })
 end
 
 function onLoad(savedData)
   if savedData and savedData ~= "" then
     local loadedData = JSON.decode(savedData)
-    GUID_LIST = loadedData.guids
+    GUID_LIST        = loadedData.guids or {}
+    importAnimal     = loadedData.importAnimal or {}
+    importDisplayId  = loadedData.importDisplayId or {}
+    importSpeed      = loadedData.importSpeed or {}
   end
 
   math.randomseed(os.time())
@@ -92,8 +111,11 @@ function onChat(message, sender)
   elseif message:sub(1, 5) == "!load" then
     if #message == 5 then
       printToColor("Loaded ID was reset.", sender.color, "Green")
-      importSpeed[sender.color] = nil
-      importAnimal[sender.color] = nil
+      importSpeed[sender.color]     = nil
+      importAnimal[sender.color]    = nil
+      importDisplayId[sender.color] = nil
+      _G["Playermat" .. sender.color].call("setDisplayId", "0000")
+      _G["Playermat" .. sender.color].call("setNewSpeed", 0)
       return false
     end
 
@@ -128,19 +150,20 @@ function parseDatabase(str)
       table.insert(fields, trim(field))
     end
 
-    if #fields == 11 then
+    if #fields == 12 then
       count = count + 1
       database[fields[1]] = {
-        animal  = fields[2],
-        move1   = fields[3],
-        move2   = fields[4],
-        move3   = fields[5],
-        move4   = fields[6],
-        attack1 = fields[7],
-        attack2 = fields[8],
-        attack3 = fields[9],
-        attack4 = fields[10],
-        speed   = fields[11]
+        animal    = fields[2],
+        move1     = fields[3],
+        move2     = fields[4],
+        move3     = fields[5],
+        move4     = fields[6],
+        attack1   = fields[7],
+        attack2   = fields[8],
+        attack3   = fields[9],
+        attack4   = fields[10],
+        speed     = fields[11],
+        displayId = fields[12]
       }
     end
   end
@@ -157,8 +180,13 @@ function loadDataForToken(token, playerColor)
   function coInsideLoading()
     printToColor("Loading data for " .. token, playerColor, "White")
 
-    importSpeed[playerColor] = tonumber(data.speed)
-    importAnimal[playerColor] = data.animal
+    importSpeed[playerColor]     = tonumber(data.speed)
+    importAnimal[playerColor]    = data.animal
+    importDisplayId[playerColor] = data.displayId
+
+    -- update playermat
+    _G["Playermat" .. playerColor].call("setDisplayId", importDisplayId[playerColor])
+    _G["Playermat" .. playerColor].call("setNewSpeed", importSpeed[playerColor])
 
     local wantedCards = {}
     for thing, name in pairs(data) do
@@ -191,21 +219,27 @@ function loadDataForToken(token, playerColor)
     if keptMovementCards ~= 4 then
       log(keptMovementCards)
       printToColor("Not enough movement cards found.", playerColor, "Red")
-      return
+      return 1
     end
 
     if keptAttackCards ~= 4 then
       log(keptAttackCards)
       printToColor("Not enough attack cards found.", playerColor, "Red")
-      return
+      return 1
     end
 
     coWait(0.25)
 
-    local deckPos = _G["Playermat" .. playerColor].positionToWorld({ x = 1.243, y = 0.2, z = -0.11 })
-    movementDeck.setPosition(deckPos)
+    local deckPos = _G["Playermat" .. playerColor].call("getDeckPos"):copy()
+    local searchResult = searchLib.atPosition(deckPos, "isCardOrDeck")
+    for _, obj in ipairs(searchResult) do
+      obj.destruct()
+    end
 
-    -- combine
+    coWait(0.25)
+
+    -- move and combine
+    movementDeck.setPosition(deckPos)
     movementDeck.putObject(attackDeck)
 
     coWait(0.25)
@@ -947,6 +981,15 @@ function newGame()
     end
   end
 
+  -- clear sync boards
+  for _, color in ipairs({ "Blue", "Red" }) do
+    for _, tokenName in ipairs({ "Relic", "PlayerTokenBlue", "PlayerTokenRed" }) do
+      if _G[tokenName .. "Copy" .. color] ~= nil then
+        _G[tokenName .. "Copy" .. color].destruct()
+      end
+    end
+  end
+
   broadcastToAll("New Game!", "Green")
 
   local speedList = {}
@@ -1048,7 +1091,8 @@ function nextRound()
 
     -- maybe update URL based on ID
     if importAnimal[color] then
-      tokenData.CustomImage.ImageURL = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/Avatars/" .. importAnimal[color] .. "_" .. color .. ".png?raw=true"
+      tokenData.CustomImage.ImageURL = "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/Avatars/" ..
+          importAnimal[color] .. "_" .. color .. ".png?raw=true"
     end
 
     _G["PlayerToken" .. color] = spawnObjectData({
