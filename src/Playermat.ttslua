@@ -72,7 +72,7 @@ function createButtons()
     height = 1750,
     width = 2000,
     color = selfColor,
-    scale = { 0.17, 0.17, 0.17 },
+    scale = { 0.15, 0.15, 0.15 },
     font_size = 600,
     font_color = { 1, 1, 1 }
   })
