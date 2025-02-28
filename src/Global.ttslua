@@ -80,6 +80,7 @@ function onLoad(savedData)
   buttonCreationGP()
   updateDatabase()
   printToAll("Type !load ABCDEFGHIJKLMNO to load data for a specific token.", "White")
+  printToAll("Loading database ...", "White")
 end
 
 -- grab object references
