@@ -1224,7 +1224,7 @@ end
 function realSync()
   for _, color in ipairs({ "Blue", "Red" }) do
     for _, tokenName in ipairs({ "Relic", "PlayerTokenBlue", "PlayerTokenRed" }) do
-      if _G[tokenName] then
+      if _G[tokenName] ~= nil then
         -- make sure a copy of the token exists
         if not _G[tokenName .. "Copy" .. color] then
           _G[tokenName .. "Copy" .. color] = _G[tokenName].clone()
