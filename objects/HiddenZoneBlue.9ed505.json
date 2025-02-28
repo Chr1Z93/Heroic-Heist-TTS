@@ -35,15 +35,15 @@
   "Sticky": true,
   "Tooltip": true,
   "Transform": {
-    "posX": 0,
+    "posX": 39.6,
     "posY": 3,
-    "posZ": -26.5,
+    "posZ": -15.5,
     "rotX": 0,
     "rotY": 0,
     "rotZ": 0,
-    "scaleX": 35,
+    "scaleX": 18,
     "scaleY": 2,
-    "scaleZ": 18
+    "scaleZ": 30
   },
   "Value": 0,
   "XmlUI": ""

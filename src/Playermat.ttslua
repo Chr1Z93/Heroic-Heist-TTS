@@ -12,6 +12,8 @@ local deckDisplaySlots = {}
 local speed            = 0
 local displayId        = "0000"
 
+local selfColor, enemyColor
+
 function onSave() return speed end
 
 function onLoad(savedData)
@@ -20,7 +22,8 @@ function onLoad(savedData)
   end
 
   math.randomseed(os.time())
-  enemyColor = oppositeColor(self.getMemo())
+  selfColor = self.getMemo()
+  enemyColor = oppositeColor(selfColor)
   createButtons()
   makeDeckDisplaySlots()
   Wait.time(updateDisplay, 2, -1)
@@ -63,12 +66,12 @@ function createButtons()
   self.createButton({
     function_owner = self,
     click_function = "claimSeat",
-    label = "Claim\n" .. self.getMemo(),
+    label = "Claim\n" .. selfColor,
     tooltip = "Click to claim this seat",
-    position = { x = -dirX * 2, y = 0.2, z = 1.6 },
+    position = Vector(dirX * 1.4, 0.2, 1.8),
     height = 1750,
     width = 2000,
-    color = self.getMemo(),
+    color = selfColor,
     scale = { 0.17, 0.17, 0.17 },
     font_size = 600,
     font_color = { 1, 1, 1 }
@@ -122,8 +125,8 @@ function makeDeckDisplaySlots()
 end
 
 function claimSeat(_, playerColor)
-  if not Player[self.getMemo()].seated then
-    Player[playerColor].changeColor(self.getMemo())
+  if not Player[selfColor].seated then
+    Player[playerColor].changeColor(selfColor)
   end
 end
 
@@ -164,7 +167,7 @@ function drawToThree(_, playerColor, _, retry)
     return
   end]]
 
-  local handObjects = Player[self.getMemo()].getHandObjects()
+  local handObjects = Player[selfColor].getHandObjects()
   if #handObjects > 2 then
     broadcastToColor("You already have 3 or more cards in your hand.", playerColor, "Orange")
     return
@@ -198,14 +201,14 @@ function drawToThree(_, playerColor, _, retry)
 
     askToReshuffleDiscard(playerColor)
   else
-    drawDeck.deal(amountToDraw, self.getMemo())
+    drawDeck.deal(amountToDraw, selfColor)
   end
   broadcastToAll(getColoredName(playerColor) .. " drew " .. amountToDraw .. " card(s).")
   hasDiscardedThisTurn = true
 end
 
 function allowButtonAccess(playerColor)
-  if playerColor ~= self.getMemo() then
+  if playerColor ~= selfColor then
     broadcastToColor("You should not be using this button.", playerColor, "Orange")
     return false
   else
@@ -217,7 +220,7 @@ function resetDeck()
   local searchResult = {}
 
   -- add hand objects
-  for _, card in ipairs(Player[self.getMemo()].getHandObjects()) do
+  for _, card in ipairs(Player[selfColor].getHandObjects()) do
     table.insert(searchResult, card)
   end
 
@@ -266,10 +269,10 @@ function getActiveCard(noLog)
 
   if #searchResult == 0 then
     if not noLog then
-      broadcastToAll("Couldn't find active card for " .. self.getMemo() .. ".", "Orange")
+      broadcastToAll("Couldn't find active card for " .. selfColor .. ".", "Orange")
     end
   elseif #searchResult > 1 or searchResult[1].type == "Deck" then
-    broadcastToAll("Detected multiple cards instead of one for " .. self.getMemo() .. ".", "Orange")
+    broadcastToAll("Detected multiple cards instead of one for " .. selfColor .. ".", "Orange")
   else
     return searchResult[1]
   end
@@ -348,7 +351,7 @@ function updateDisplay()
   local cardDataList = {}
 
   -- cards in hand (will be displayed face-up)
-  for _, card in ipairs(Player[self.getMemo()].getHandObjects()) do
+  for _, card in ipairs(Player[selfColor].getHandObjects()) do
     local data = card.getData()
     data.Transform.rotX = selfRot.x
     data.Transform.rotY = selfRot.y
