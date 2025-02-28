@@ -68,12 +68,12 @@ function createButtons()
     click_function = "claimSeat",
     label = "Claim\n" .. selfColor,
     tooltip = "Click to claim this seat",
-    position = Vector(dirX * 1.4, 0.2, 1.8),
+    position = Vector(dirX * 1.25, 0.2, 0.5),
     height = 1750,
     width = 2000,
     color = selfColor,
-    scale = { 0.15, 0.15, 0.15 },
-    font_size = 600,
+    scale = { 0.1, 0.1, 0.1 },
+    font_size = 700,
     font_color = { 1, 1, 1 }
   })
 
@@ -82,7 +82,7 @@ function createButtons()
     function_owner = self,
     height = 1000,
     width = 4000,
-    scale = { 0.08, 0.08, 0.08 },
+    scale = { 0.06, 0.06, 0.06 },
     font_size = 800,
     font_color = { 0, 0, 0 }
   }
@@ -90,14 +90,14 @@ function createButtons()
   -- draw to three button
   buttonParameters.label = "Draw to 3"
   buttonParameters.click_function = "drawToThree"
-  buttonParameters.position = { x = -0.65, y = 0.2, z = 1.15 }
+  buttonParameters.position = { x = -0.65, y = 0.2, z = 1.1 }
   buttonParameters.tooltip = "Click to draw until you have 3 cards"
   self.createButton(buttonParameters)
 
   -- play card button
   buttonParameters.label = "Play Card"
   buttonParameters.click_function = "playCard"
-  buttonParameters.position = { x = 0.65, y = 0.2, z = 1.15 }
+  buttonParameters.position = { x = 0.65, y = 0.2, z = 1.1 }
   buttonParameters.tooltip = "Click to resolve the active card"
   self.createButton(buttonParameters)
 end

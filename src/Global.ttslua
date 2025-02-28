@@ -1121,11 +1121,11 @@ function nextRound()
 
     -- spawn another copy for the playermat as display
     tokenData.Locked = true
-    tokenData.Transform.scaleX = 1.4
-    tokenData.Transform.scaleZ = 1.4
+    tokenData.Transform.scaleX = 2.2
+    tokenData.Transform.scaleZ = 2.2
     _G["PlayerMatToken" .. color] = spawnObjectData({
       data     = tokenData,
-      position = mat.positionToWorld(Vector(-0.8, 0.2, -0.3)):setAt("y", 2.7),
+      position = mat.positionToWorld(Vector(-0.77, 0.2, -0.3)):setAt("y", 2.62),
       rotation = mat.getRotation()
     })
     GUID_LIST["PlayerMatToken" .. color] = _G["PlayerMatToken" .. color].getGUID()
@@ -1135,8 +1135,8 @@ function nextRound()
 
     if round == 1 and importSpeed[color] == nil then
       -- give players copies of cards to assemble their deck
-      local pos1 = Vector(DIRECTION_RIGHT[color] * 1.5, 0.2, 1.8)
-      local pos2 = Vector(DIRECTION_RIGHT[color] * 2.5, 0.2, 1.8)
+      local pos1 = Vector(DIRECTION_RIGHT[color] * 1.4, 0.2, 0.8)
+      local pos2 = Vector(DIRECTION_RIGHT[color] * 2.0, 0.2, 0.8)
       local rot  = mat.getRotation()
       _G["SourceMovementDeck"].takeObject({ position = mat.positionToWorld(pos1), rotation = rot })
       _G["SourceAttackDeck"].takeObject({ position = mat.positionToWorld(pos2), rotation = rot })
