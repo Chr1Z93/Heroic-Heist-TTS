@@ -1094,6 +1094,11 @@ function nextRound()
       end
     end
 
+    if _G["PlayerMatToken" .. color] then
+      _G["PlayerMatToken" .. color].destruct()
+    end
+    GUID_LIST["PlayerMatToken" .. color] = nil
+
     -- make sure all buttons are shown
     mat.call("createButtons")
 
@@ -1113,6 +1118,17 @@ function nextRound()
     })
 
     GUID_LIST["PlayerToken" .. color] = _G["PlayerToken" .. color].getGUID()
+
+    -- spawn another copy for the playermat as display
+    tokenData.Locked = true
+    tokenData.Transform.scaleX = 1.4
+    tokenData.Transform.scaleZ = 1.4
+    _G["PlayerMatToken" .. color] = spawnObjectData({
+      data     = tokenData,
+      position = mat.positionToWorld(Vector(-0.8, 0.2, -0.3)):setAt("y", 2.7),
+      rotation = mat.getRotation()
+    })
+    GUID_LIST["PlayerMatToken" .. color] = _G["PlayerMatToken" .. color].getGUID()
 
     -- reset health trackers
     _G["HealthTracker" .. color].call("updateVal", 100)
