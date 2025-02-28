@@ -1,4 +1,5 @@
 require("CardMetadata")
+local deckLib    = require("libraries/DeckLib")
 local searchLib  = require("libraries/SearchLib")
 
 DATABASE_URL     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=674952270&single=true&output=csv"
@@ -98,6 +99,46 @@ function setNotInteractable()
       log("Couldn't find object: " .. name)
     end
   end
+end
+
+function onObjectEnterZone(zone, obj)
+  if zone.type == "Hand" and obj.type == "Card" then
+    addPlayButtonToCard(obj)
+  end
+end
+
+function onObjectLeaveZone(zone, obj)
+  if zone.type == "Hand" and obj.type == "Card" then
+    obj.clearButtons()
+  end
+end
+
+function addPlayButtonToCard(card)
+  card.clearButtons()
+  card.createButton({
+    click_function = "playCard",
+    function_owner = Global,
+    label = "Play",
+    position = { 0, 0.1, 2 },
+    rotation = { 0, 0, 0 },
+    scale = { 0.5, 0.5, 0.5 },
+    width = 1500,
+    height = 750,
+    font_size = 550
+  })
+end
+
+function playCard(card, playerColor)
+  local position = _G["Playermat" .. playerColor].call("getPlayedCardPos"):copy()
+
+  local searchResult = searchLib.atPosition(position, "isCardOrDeck")
+
+  if #searchResult > 0 then
+    broadcastToColor("There's already a card in the played card area.", playerColor, "Orange")
+    return
+  end
+
+  deckLib.placeOrMergeIntoDeck(card, position, _G["Playermat" .. playerColor].getRotation():setAt("z", 180))
 end
 
 function onChat(message, sender)

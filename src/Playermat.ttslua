@@ -263,6 +263,10 @@ function getDiscardPile()
   if #searchResult == 1 then return searchResult[1] end
 end
 
+function getPlayedCardPos()
+  return playedCardPos
+end
+
 -- returns a reference to the active card
 function getActiveCard(noLog)
   local searchResult = searchLib.atPosition(playedCardPos, "isCardOrDeck")
