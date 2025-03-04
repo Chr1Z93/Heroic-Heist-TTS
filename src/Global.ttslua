@@ -119,7 +119,7 @@ function addPlayButtonToCard(card)
     click_function = "playCard",
     function_owner = Global,
     label = "Play",
-    position = { 0, 0.1, 2 },
+    position = { 0, 0.1, -1.95 },
     rotation = { 0, 0, 0 },
     scale = { 0.5, 0.5, 0.5 },
     width = 1500,
@@ -396,10 +396,10 @@ function takeControlOfRelic(newOwner, move)
   -- take control if uncontrolled + moving or if controlled by other player
   if (currentOwner and currentOwner ~= newOwner) or
       (currentOwner == nil and move == true) then
-    local newPos = { 0, 2.8, -15.13 }
+    local newPos = { -10, 2.8, -15.13 }
     local newRot = { 0, 180, 0 }
     if newOwner == "Red" then
-      newPos = { 0, 2.8, 14.45 }
+      newPos = { -10, 2.8, 14.45 }
       newRot = { 0, 0, 0 }
     end
     local reason = move and "a movement card)." or "an attack card)."
@@ -1163,11 +1163,11 @@ function nextRound()
 
     -- spawn another copy for the playermat as display
     tokenData.Locked = true
-    tokenData.Transform.scaleX = 2.2
-    tokenData.Transform.scaleZ = 2.2
+    tokenData.Transform.scaleX = 2.7
+    tokenData.Transform.scaleZ = 2.7
     _G["PlayerMatToken" .. color] = spawnObjectData({
       data     = tokenData,
-      position = mat.positionToWorld(Vector(-0.77, 0.2, -0.3)):setAt("y", 2.62),
+      position = mat.positionToWorld(Vector(-0.9, 0.2, -0.3)):setAt("y", 2.62),
       rotation = mat.getRotation()
     })
     GUID_LIST["PlayerMatToken" .. color] = _G["PlayerMatToken" .. color].getGUID()
@@ -1232,13 +1232,16 @@ function nextTurn()
   else
     broadcastToAll("Turn " .. turn, "Yellow")
 
+    log(0)
     -- show "Play a Card" button
     _G["PlayermatBlue"].call("createButtons")
     _G["PlayermatRed"].call("createButtons")
 
+    log(1)
     -- allow using "draw" button
     _G["PlayermatBlue"].setVar("hasDiscardedThisTurn", false)
     _G["PlayermatRed"].setVar("hasDiscardedThisTurn", false)
+    log(2)
   end
 end
 
