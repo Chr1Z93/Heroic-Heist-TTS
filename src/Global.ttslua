@@ -804,7 +804,9 @@ function resolveCard(params)
     -- check connected spaces
     local connectedTargets = getConnectedTargets(params.cardId, playerColor, choiceGrid)
     for _, target in ipairs(connectedTargets) do
-      spawnCross(playerColor, target)
+      if target.row ~= choiceGrid.row or target.col ~= choiceGrid.col then
+        spawnCross(playerColor, target)
+      end
       if eGrid.row == target.row and eGrid.col == target.col then
         dealDamageToColor(enemyColor, damage)
         takeControlOfRelic(playerColor, false)
@@ -956,7 +958,7 @@ function spawnCross(playerColor, grid)
   if gridPos == nil then return end
 
   local mod = (playerColor == "Red") and 1 or -1
-  local pos = gridPos + Vector(0, -0.175, mod * 1.5)
+  local pos = gridPos + Vector(0, -0.385, mod * 1.5)
   local cross = _G["SourceCross" .. playerColor].takeObject()
   cross.setPosition(pos)
   cross.setRotation(Vector(0, 45, 0))
@@ -1166,7 +1168,7 @@ function nextRound()
     tokenData.Transform.scaleZ = 2.5
     _G["PlayerMatToken" .. color] = spawnObjectData({
       data     = tokenData,
-      position = mat.positionToWorld(Vector(-0.8, 0.2, -0.4)):setAt("y", 2.62),
+      position = mat.positionToWorld(Vector(-0.75, 0.2, -0.4)):setAt("y", 2.62),
       rotation = mat.getRotation()
     })
     GUID_LIST["PlayerMatToken" .. color] = _G["PlayerMatToken" .. color].getGUID()
@@ -1231,16 +1233,13 @@ function nextTurn()
   else
     broadcastToAll("Turn " .. turn, "Yellow")
 
-    log(0)
     -- show "Play a Card" button
     _G["PlayermatBlue"].call("createButtons")
     _G["PlayermatRed"].call("createButtons")
 
-    log(1)
     -- allow using "draw" button
     _G["PlayermatBlue"].setVar("hasDiscardedThisTurn", false)
     _G["PlayermatRed"].setVar("hasDiscardedThisTurn", false)
-    log(2)
   end
 end
 
