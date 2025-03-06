@@ -119,7 +119,7 @@ function addPlayButtonToCard(card)
     click_function = "playCard",
     function_owner = Global,
     label = "Play",
-    position = { 0, 0.1, -1.95 },
+    position = { 0, 0.1, 2 },
     rotation = { 0, 0, 0 },
     scale = { 0.5, 0.5, 0.5 },
     width = 1500,
@@ -838,9 +838,8 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
 
   -- check for movement block
   if eGrid.row == nextGrid.row and eGrid.col == nextGrid.col then
-    broadcastToAll(
-      getColoredName(playerColor) .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")",
-      "White")
+    local cName = getColoredName(playerColor)
+    broadcastToAll(cName .. "'s movement was blocked (Row/Col: " .. nextGrid.row .. "/" .. nextGrid.col .. ")", "White")
     maybeTakeControlOfRelic(playerColor)
     return
   end
@@ -1163,11 +1162,11 @@ function nextRound()
 
     -- spawn another copy for the playermat as display
     tokenData.Locked = true
-    tokenData.Transform.scaleX = 2.7
-    tokenData.Transform.scaleZ = 2.7
+    tokenData.Transform.scaleX = 2.5
+    tokenData.Transform.scaleZ = 2.5
     _G["PlayerMatToken" .. color] = spawnObjectData({
       data     = tokenData,
-      position = mat.positionToWorld(Vector(-0.9, 0.2, -0.3)):setAt("y", 2.62),
+      position = mat.positionToWorld(Vector(-0.8, 0.2, -0.4)):setAt("y", 2.62),
       rotation = mat.getRotation()
     })
     GUID_LIST["PlayerMatToken" .. color] = _G["PlayerMatToken" .. color].getGUID()

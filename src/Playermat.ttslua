@@ -365,7 +365,7 @@ function updateDisplay()
 
   -- cards in deck / discard / to be played (will be displayed opposite of current rotation)
   local pos = self.positionToWorld(Vector(0, 0, 0.6))
-  for _, obj in ipairs(searchLib.inArea(pos, _, Vector(14, 1, 6), "isCardOrDeck")) do
+  for _, obj in ipairs(searchLib.inArea(pos, nil, Vector(25, 1, 10), "isCardOrDeck")) do
     if obj.type == "Card" then
       local data = obj.getData()
       data.Transform.rotX = selfRot.x
@@ -390,8 +390,8 @@ function updateDisplay()
   table.sort(cardDataList, function(a, b) return a.GMNotes < b.GMNotes end)
 
   -- remove current cards
-  local pos2 = self.positionToWorld(Vector(0, 0, -0.6))
-  for _, obj in ipairs(searchLib.inArea(pos2, _, Vector(14, 1, 6), "isCardOrDeck")) do
+  local pos2 = self.positionToWorld(Vector(0, 0, -0.4))
+  for _, obj in ipairs(searchLib.inArea(pos2, nil, Vector(25, 1, 12), "isCardOrDeck")) do
     obj.destruct()
   end
 
