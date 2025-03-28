@@ -58,17 +58,18 @@ function createButtons()
     position = { x = 0.8, y = 0.2, z = 0.14 }
   })
 
-  -- get direction to global left
+  --[[ get direction to global left
   local pos = self.positionToLocal(Vector(38, 0, 0))
   local dirX = pos.x / math.abs(pos.x)
-
+  position = Vector(dirX * 1.25, 0.2, 0.5)
+  ]]
   -- claim this seat button
   self.createButton({
     function_owner = self,
     click_function = "claimSeat",
     label = "Claim\n" .. selfColor,
     tooltip = "Click to claim this seat",
-    position = Vector(dirX * 1.25, 0.2, 0.5),
+    position = Vector(0, 0.2, 1.25),
     height = 1750,
     width = 2000,
     color = selfColor,
