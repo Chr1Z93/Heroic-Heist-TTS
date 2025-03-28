@@ -683,9 +683,6 @@ function registerChoice(params)
   choices[playerColor] = params
   _G["HighlightBoard" .. playerColor].call("hideAll", playerColor)
 
-  -- hide "Play a Card" button
-  _G["Playermat" .. playerColor].call("togglePlayButton")
-
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
     startLuaCoroutine(Global, "resolveBothCards")
@@ -1232,14 +1229,6 @@ function nextTurn()
     broadcastToAll("A round ends after 8 turns, press 'next Round' to proceed.", "White")
   else
     broadcastToAll("Turn " .. turn, "Yellow")
-
-    -- show "Play a Card" button
-    _G["PlayermatBlue"].call("createButtons")
-    _G["PlayermatRed"].call("createButtons")
-
-    -- allow using "draw" button
-    _G["PlayermatBlue"].setVar("hasDiscardedThisTurn", false)
-    _G["PlayermatRed"].setVar("hasDiscardedThisTurn", false)
   end
 end
 

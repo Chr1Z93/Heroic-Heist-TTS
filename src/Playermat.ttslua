@@ -4,7 +4,6 @@ local deckLib          = require("libraries/DeckLib")
 local deckPos          = self.positionToWorld({ x = 0.685,  y = 0.2, z = 0.602 })
 local discardPos       = self.positionToWorld({ x = 0,      y = 0.2, z = 0.602 })
 local playedCardPos    = self.positionToWorld({ x = -0.685, y = 0.2, z = 0.546 })
-hasDiscardedThisTurn   = false
 
 local deckDisplaySlot1 = Vector(-0.767, 0.25, -0.693)
 local deckDisplaySlot8 = Vector(0.385, 0.25, -0.18)
@@ -163,11 +162,6 @@ end
 function drawToThree(_, playerColor, _, retry)
   if not allowButtonAccess(playerColor) then return end
 
-  --[[if hasDiscardedThisTurn then
-    broadcastToColor("You are only allowed to discard & draw to 3 once per turn.", playerColor, "Orange")
-    return
-  end]]
-
   local handObjects = Player[selfColor].getHandObjects()
   if #handObjects > 2 then
     broadcastToColor("You already have 3 or more cards in your hand.", playerColor, "Orange")
@@ -205,7 +199,6 @@ function drawToThree(_, playerColor, _, retry)
     drawDeck.deal(amountToDraw, selfColor)
   end
   broadcastToAll(getColoredName(playerColor) .. " drew " .. amountToDraw .. " card(s).")
-  hasDiscardedThisTurn = true
 end
 
 function allowButtonAccess(playerColor)
@@ -306,17 +299,6 @@ function oppositeColor(color)
     return "Red"
   else
     return "Blue"
-  end
-end
-
--- shows / hides the "Play a card" button
-function togglePlayButton()
-  local buttonData = self.getButtons()
-
-  if #buttonData == 3 then
-    self.removeButton(2)
-  else
-    createButtons()
   end
 end
 
