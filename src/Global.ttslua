@@ -1030,7 +1030,7 @@ end
 
 function newGame()
   for _, obj in ipairs(getObjects()) do
-    if obj.locked == false and obj.getName() ~= "Imported Deck" then
+    if (obj.locked == false and obj.getName() ~= "Imported Deck") or obj.type == "Card" or obj.type == "Deck" then
       obj.destruct()
     end
   end

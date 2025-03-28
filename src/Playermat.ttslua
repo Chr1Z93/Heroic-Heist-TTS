@@ -42,7 +42,7 @@ function createButtons()
     font_color = "White",
     label = speed,
     click_function = "none",
-    position = { x = -0.3, y = 0.2, z = 0.14 }
+    position = { x = -0.3, y = 0.2, z = 0.141 }
   })
 
   -- hero ID button
@@ -55,7 +55,7 @@ function createButtons()
     font_color = "White",
     label = displayId,
     click_function = "none",
-    position = { x = 0.8, y = 0.2, z = 0.14 }
+    position = { x = 0.8, y = 0.2, z = 0.141 }
   })
 
   --[[ get direction to global left
