@@ -2,11 +2,11 @@ local MIN_VALUE, MAX_VALUE = 0, 100
 val = 0
 
 -- health bar data
-healthWidth = 250
-healthHeight = 38
-healthPos = Vector(140, 475, -22)
-healthRot = Vector(0, 0, 270)
-healthScale = Vector(1.5, 1.5, 1.5)
+local healthWidth = 250
+local healthHeight = 38
+local healthPos = Vector(0, -130, 70)
+local healthRot = Vector(0, 0, 0)
+local healthScale = Vector(1.3, 1.3, 1.3)
 
 function onSave() return JSON.encode(val) end
 
@@ -93,18 +93,16 @@ function getHealthBarData()
   if self.getName() == "HealthTrackerRed" then
     offset = -offset
   end
-  local position = healthPos.x .. " " .. (healthPos.y - offset) .. " " .. healthPos.z
+  local position = (healthPos.x - offset) .. " " .. healthPos.y .. " " .. healthPos.z
   return width, position
 end
 
 function createHealthBarXml()
   local width, position = getHealthBarData()
-
   local uiTable = {
     {
       tag = "Image",
       attributes = {
-        id = "healthFrame",
         scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
         image = "HealthBar",
         width = healthWidth + 50,
@@ -118,7 +116,7 @@ function createHealthBarXml()
       attributes = {
         id = "healthFill",
         scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
-        color = "#FF000033",
+        color = "#FF000077",
         width = width,
         height = healthHeight,
         position = position,
