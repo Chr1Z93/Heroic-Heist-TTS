@@ -82,17 +82,24 @@ function maybeUpdateHealthBar()
 end
 
 function updateHealthBar()
+  local width, position = getHealthBarData()
+  self.UI.setAttribute("healthFill", "width", width)
+  self.UI.setAttribute("healthFill", "position", position)
+end
+
+function getHealthBarData()
   local width = val * healthWidth / 100
   local offset = (healthWidth - width) / 2 * healthScale.x
   if self.getName() == "HealthTrackerRed" then
     offset = -offset
   end
   local position = healthPos.x .. " " .. (healthPos.y - offset) .. " " .. healthPos.z
-  self.UI.setAttribute("healthFill", "width", width)
-  self.UI.setAttribute("healthFill", "position", position)
+  return width, position
 end
 
 function createHealthBarXml()
+  local width, position = getHealthBarData()
+
   local uiTable = {
     {
       tag = "Image",
@@ -112,9 +119,9 @@ function createHealthBarXml()
         id = "healthFill",
         scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
         color = "#FF000033",
-        width = healthWidth,
+        width = width,
         height = healthHeight,
-        position = healthPos.x .. " " .. healthPos.y .. " " .. healthPos.z,
+        position = position,
         rotation = healthRot.x .. " " .. healthRot.y .. " " .. healthRot.z
       }
     }
