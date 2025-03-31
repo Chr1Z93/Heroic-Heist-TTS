@@ -10,6 +10,13 @@
     "g": 0.5333,
     "r": 0.1216
   },
+  "CustomUIAssets": [
+    {
+      "Name": "HealthBar",
+      "Type": 0,
+      "URL": "https://github.com/Chr1Z93/Heroic-Heist-TTS/blob/main/assets/Health_Bar.png?raw=true"
+    }
+  ],
   "Description": "",
   "DragSelectable": true,
   "GMNotes": "",

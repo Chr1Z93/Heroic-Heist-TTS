@@ -1,6 +1,13 @@
 local MIN_VALUE, MAX_VALUE = 0, 100
 val = 0
 
+-- health bar data
+healthWidth = 250
+healthHeight = 38
+healthPos = Vector(140, 475, -22)
+healthRot = Vector(0, 0, 270)
+healthScale = Vector(1.5, 1.5, 1.5)
+
 function onSave() return JSON.encode(val) end
 
 function onLoad(savedData)
@@ -14,6 +21,11 @@ function onLoad(savedData)
   local name = self.getName()
   if name == "HealthTrackerBlue" or name == "HealthTrackerRed" then
     fontSize = 500
+    if name == "HealthTrackerRed" then
+      healthPos:scale(Vector(-1, 1, 1))
+      healthRot:scale(Vector(1, 1, -1))
+    end
+    createHealthBarXml()
   end
 
   self.createButton({
@@ -39,12 +51,14 @@ function updateVal(newVal)
   if tonumber(newVal) then
     val = math.min(math.max(newVal, MIN_VALUE), MAX_VALUE)
     self.editButton({ index = 0, label = tostring(val) })
+    maybeUpdateHealthBar()
   end
 end
 
 function addOrSubtract(amount)
   val = math.min(math.max(val + amount, MIN_VALUE), MAX_VALUE)
   self.editButton({ index = 0, label = tostring(val) })
+  maybeUpdateHealthBar()
   return val
 end
 
@@ -58,4 +72,53 @@ function getColoredName(playerColor)
 
   -- add bb-code
   return "[" .. Color.fromString(playerColor):toHex() .. "]" .. displayName .. "[-]"
+end
+
+function maybeUpdateHealthBar()
+  local name = self.getName()
+  if name == "HealthTrackerBlue" or name == "HealthTrackerRed" then
+    updateHealthBar()
+  end
+end
+
+function updateHealthBar()
+  local width = val * healthWidth / 100
+  local offset = (healthWidth - width) / 2 * healthScale.x
+  if self.getName() == "HealthTrackerRed" then
+    offset = -offset
+  end
+  local position = healthPos.x .. " " .. (healthPos.y - offset) .. " " .. healthPos.z
+  self.UI.setAttribute("healthFill", "width", width)
+  self.UI.setAttribute("healthFill", "position", position)
+end
+
+function createHealthBarXml()
+  local uiTable = {
+    {
+      tag = "Image",
+      attributes = {
+        id = "healthFrame",
+        scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
+        image = "HealthBar",
+        width = healthWidth + 50,
+        height = healthHeight + 37,
+        position = healthPos.x .. " " .. healthPos.y .. " " .. healthPos.z,
+        rotation = healthRot.x .. " " .. healthRot.y .. " " .. healthRot.z
+      }
+    },
+    {
+      tag = "Panel",
+      attributes = {
+        id = "healthFill",
+        scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
+        color = "#FF000033",
+        width = healthWidth,
+        height = healthHeight,
+        position = healthPos.x .. " " .. healthPos.y .. " " .. healthPos.z,
+        rotation = healthRot.x .. " " .. healthRot.y .. " " .. healthRot.z
+      }
+    }
+  }
+
+  self.UI.setXmlTable(uiTable)
 end
