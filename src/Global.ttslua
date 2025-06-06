@@ -1,17 +1,18 @@
 require("CardMetadata")
-local deckLib    = require("libraries/DeckLib")
-local searchLib  = require("libraries/SearchLib")
+local CoroutineLib = require("libraries/CoroutineLib")
+local DeckLib      = require("libraries/DeckLib")
+local SearchLib    = require("libraries/SearchLib")
 
-DATABASE_URL     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=674952270&single=true&output=csv"
+DATABASE_URL       = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAiDXcHoM4y5_lsrEjMbfd32FtdoiKLWbZhQ92frz54tloyoec1zrLR4qEdqibA9JbMUVD3GXs4VBs/pub?gid=674952270&single=true&output=csv"
 
-STARTING_GRID    = {
+STARTING_GRID      = {
   Blue = { row = 1, col = 3 },
   Red  = { row = 5, col = 3 }
 }
 
-DIRECTION_RIGHT  = { Blue = -1, Red = 1 }
+DIRECTION_RIGHT    = { Blue = -1, Red = 1 }
 
-NOT_INTERACTABLE = {
+NOT_INTERACTABLE   = {
   "Logo1",
   "Logo2",
   "PlayArea",
@@ -23,7 +24,7 @@ NOT_INTERACTABLE = {
   "HighlightBoardRed"
 }
 
-GUID_LIST        = {
+GUID_LIST          = {
   Logo1                 = "f940da",
   Logo2                 = "adcd0f",
   GamePanel             = "2f5ddb",
@@ -51,11 +52,11 @@ GUID_LIST        = {
   TurnTracker           = "6707f1",
 }
 
-choices          = {}
-database         = {}
-importAnimal     = {}
-importDisplayId  = {}
-importSpeed      = {}
+choices            = {}
+database           = {}
+importAnimal       = {}
+importDisplayId    = {}
+importSpeed        = {}
 
 function onSave()
   return JSON.encode({
@@ -131,14 +132,14 @@ end
 function playCard(card, playerColor)
   local position = _G["Playermat" .. playerColor].call("getPlayedCardPos"):copy()
 
-  local searchResult = searchLib.atPosition(position, "isCardOrDeck")
+  local searchResult = SearchLib.atPosition(position, "isCardOrDeck")
 
   if #searchResult > 0 then
     broadcastToColor("There's already a card in the played card area.", playerColor, "Orange")
     return
   end
 
-  deckLib.placeOrMergeIntoDeck(card, position, _G["Playermat" .. playerColor].getRotation():setAt("z", 180))
+  DeckLib.placeOrMergeIntoDeck(card, position, _G["Playermat" .. playerColor].getRotation():setAt("z", 180))
 end
 
 function onChat(message, sender)
@@ -252,7 +253,7 @@ function loadDataForToken(token, playerColor)
     -- spawn attack deck copy
     local attackDeck = _G["SourceAttackDeck"].takeObject({ position = pos2, rotation = rot })
 
-    coWait(0.5)
+    CoroutineLib.yieldSeconds(0.5)
 
     -- only keep wanted cards
     local keptMovementCards = removeNonmatchingCards(movementDeck, wantedCards)
@@ -261,39 +262,38 @@ function loadDataForToken(token, playerColor)
     if keptMovementCards ~= 4 then
       log(keptMovementCards)
       printToColor("Not enough movement cards found.", playerColor, "Red")
-      return 1
+      return
     end
 
     if keptAttackCards ~= 4 then
       log(keptAttackCards)
       printToColor("Not enough attack cards found.", playerColor, "Red")
-      return 1
+      return
     end
 
-    coWait(0.25)
+    CoroutineLib.yieldSeconds(0.25)
 
     local deckPos = _G["Playermat" .. playerColor].call("getDeckPos"):copy()
-    local searchResult = searchLib.atPosition(deckPos, "isCardOrDeck")
+    local searchResult = SearchLib.atPosition(deckPos, "isCardOrDeck")
     for _, obj in ipairs(searchResult) do
       obj.destruct()
     end
 
-    coWait(0.25)
+    CoroutineLib.yieldSeconds(0.25)
 
     -- move and combine
     movementDeck.setPosition(deckPos)
     movementDeck.putObject(attackDeck)
 
-    coWait(0.25)
+    CoroutineLib.yieldSeconds(0.25)
 
     -- shuffle
     movementDeck.setRotation(rot)
     movementDeck.setName("Imported Deck")
     movementDeck.shuffle()
-    return 1
   end
 
-  startLuaCoroutine(Global, "coInsideLoading")
+  CoroutineLib.start(coInsideLoading)
 end
 
 function removeNonmatchingCards(deck, wantedCards)
@@ -685,7 +685,7 @@ function registerChoice(params)
 
   -- if both players made a choice, resolve them
   if choices.Blue ~= nil and choices.Red ~= nil then
-    startLuaCoroutine(Global, "resolveBothCards")
+    CoroutineLib.start(resolveBothCards)
   end
 end
 
@@ -694,12 +694,11 @@ function resolveBothCards()
 
   printToAll(getColoredName(resolveOrder[1]) .. "'s card gets resolved first.")
   resolveCard(choices[resolveOrder[1]])
-  coWait(1.5)
+  CoroutineLib.yieldSeconds(1.5)
   resolveCard(choices[resolveOrder[2]])
 
   -- reset "choices" table
   choices = {}
-  return 1
 end
 
 function getResolveOrder()
@@ -744,11 +743,6 @@ function getResolveOrder()
       return resolveOrder.Blue
     end
   end
-end
-
-function coWait(t)
-  local now = Time.time
-  repeat coroutine.yield(0) until Time.time > now + t
 end
 
 function isAttack(cardId)
@@ -849,7 +843,7 @@ function resolveMove(md, playerColor, startGrid, eGrid, choiceGrid, step)
 
   _G["PlayerToken" .. playerColor].setPositionSmooth(convertGridToPos(nextGrid))
 
-  coWait(0.8)
+  CoroutineLib.yieldSeconds(0.8)
 
   -- maybe take control of relic
   if md.directionMove then
@@ -981,12 +975,12 @@ function randomDecks()
     local rot = _G["Playermat" .. color].getRotation():setAt("z", 180)
 
     -- remove existing random decks
-    local searchResult = searchLib.atPosition(pos, "isDeck")
+    local searchResult = SearchLib.atPosition(pos, "isDeck")
     for _, obj in ipairs(searchResult) do
       obj.destruct()
     end
 
-    local searchResult2 = searchLib.atPosition(pos2, "isDeck")
+    local searchResult2 = SearchLib.atPosition(pos2, "isDeck")
     for _, obj in ipairs(searchResult2) do
       obj.destruct()
     end
@@ -1097,7 +1091,7 @@ function nextRound()
   broadcastToAll(getColoredName(firstPlayer) .. " goes first this round.")
 
   -- reset play area (keep cards and decks)
-  for _, obj in ipairs(searchLib.onObject(_G["PlayArea"], "isUnlocked")) do
+  for _, obj in ipairs(SearchLib.onObject(_G["PlayArea"], "isUnlocked")) do
     if obj.type ~= "Card" and obj.type ~= "Deck" then
       obj.destruct()
     end
@@ -1119,7 +1113,7 @@ function nextRound()
 
   for _, color in ipairs({ "Blue", "Red" }) do
     -- reset private playarea
-    for _, obj in ipairs(searchLib.onObject(_G["PlayArea" .. color], "isUnlocked")) do
+    for _, obj in ipairs(SearchLib.onObject(_G["PlayArea" .. color], "isUnlocked")) do
       obj.destruct()
     end
 
@@ -1128,7 +1122,7 @@ function nextRound()
     local mat = _G["Playermat" .. color]
 
     -- reset playerboards
-    for _, obj in ipairs(searchLib.onObject(mat, "isUnlocked")) do
+    for _, obj in ipairs(SearchLib.onObject(mat, "isUnlocked")) do
       if obj.type ~= "Card" and obj.type ~= "Deck" then
         obj.destruct()
       end

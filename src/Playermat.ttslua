@@ -387,7 +387,8 @@ function updateDisplay()
     data.Locked = true
     data.Tooltip = false
 
-    spawnObjectData({ data = data })
+    local obj = spawnObjectData({ data = data })
+    obj.interactable = false
   end
 end
 

@@ -103,27 +103,31 @@ function createHealthBarXml()
     {
       tag = "Image",
       attributes = {
-        scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
+        scale = convertVectorToXmlString(healthScale),
         image = "HealthBar",
         width = healthWidth + 50,
         height = healthHeight + 37,
-        position = healthPos.x .. " " .. healthPos.y .. " " .. healthPos.z,
-        rotation = healthRot.x .. " " .. healthRot.y .. " " .. healthRot.z
+        position = convertVectorToXmlString(healthPos),
+        rotation = convertVectorToXmlString(healthRot)
       }
     },
     {
       tag = "Panel",
       attributes = {
         id = "healthFill",
-        scale = healthScale.x .. " " .. healthScale.y .. " " .. healthScale.z,
+        scale = convertVectorToXmlString(healthScale),
         color = "#FF000077",
         width = width,
         height = healthHeight,
         position = position,
-        rotation = healthRot.x .. " " .. healthRot.y .. " " .. healthRot.z
+        rotation = convertVectorToXmlString(healthRot)
       }
     }
   }
 
   self.UI.setXmlTable(uiTable)
+end
+
+function convertVectorToXmlString(vec)
+  return vec.x .. " " .. vec.y .. " " .. vec.z
 end
